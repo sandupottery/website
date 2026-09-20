@@ -4,12 +4,13 @@
    Sandu Pottery — il sito definitivo.
 
    Nota sul perché questo file è CSS scritto a mano e non classi Tailwind:
-   l'impaginazione della home non è una griglia, è cinque impaginazioni
-   diverse — ognuna con la sua larghezza, la sua altezza e il suo rientro
-   del titolo sulla fotografia. Espressa in utility diventerebbe una riga
-   di quaranta valori arbitrari per elemento, impossibile da rileggere e da
-   ritoccare. Tailwind resta per i token (@theme) e per i componenti futuri
-   (il calendario dei mercatini); il disegno vive qui, con nomi propri.
+   quello che regge la home non sono valori, sono ragioni — perché il bordo
+   destro del canale non si muove, perché la didascalia ha un margine sotto
+   invece di un'altezza sopra, perché una superficie che legge `--ground` non
+   può avere una transizione. In utility resterebbero i valori e andrebbero
+   perse le ragioni, che è l'unica parte difficile da ricostruire. Tailwind
+   resta per i token (@theme) e per i componenti futuri (il calendario dei
+   mercatini); il disegno vive qui, con nomi propri.
 
    La tesi: il disegno è severo, il calore è il contenuto. Filetti netti,
    caratteri grandi e silenziosi, nessun ornamento, nessun colore che non
@@ -73,7 +74,6 @@
 		font-size: 18px;
 		line-height: 1.62;
 		-webkit-font-smoothing: antialiased;
-		transition: background-color 0.9s cubic-bezier(0.4, 0, 0.2, 1);
 	}
 
 	a {
@@ -183,7 +183,6 @@
 	padding: 1.9rem 0 1.9rem 1.6rem;
 	border-right: var(--peso) solid var(--ink);
 	background: var(--ground);
-	transition: background-color 0.9s cubic-bezier(0.4, 0, 0.2, 1);
 	view-transition-name: margine;
 }
 
@@ -329,10 +328,102 @@ main.in-stanza {
 
 /* ═══════════════ l'apertura ═══════════════
    Pochi pesi, scelti: 700 → 300 corsivo → 400, poi un occhiello, poi 700
-   corsivo. Non una scala che sale, che leggerebbe come un gradiente. */
+   corsivo. Non una scala che sale, che leggerebbe come un gradiente.
+
+   Tutto lo schermo, e nient'altro che la frase: è il respiro che serve
+   all'atterraggio, e lascia al glifo in basso il compito di dire — da solo e
+   senza ambiguità — che la pagina si scorre. `svh` e non `vh`: su un telefono
+   `vh` ignora la barra degli indirizzi, e il glifo finirebbe sotto la piega
+   proprio nell'unico schermo il cui mestiere è dire che sotto c'è dell'altro. */
 .apertura {
-	padding: 7.5rem 3rem 4rem;
+	position: relative;
+	min-height: 100svh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	padding: 4rem 3rem 8rem;
 	max-width: 60rem;
+}
+
+/* ═══ il glifo dello scorri ═══
+   Un'asta verticale con la sua punta, e la parola in verticale accanto: il
+   sito ha già una scritta verticale — il marchio nel margine — quindi questa
+   ne è l'eco, non un'idea nuova. L'occhio lo cattura il tratto scuro che
+   scende lungo l'asta, sopra la parola. */
+.scorri {
+	position: absolute;
+	left: 3rem;
+	bottom: 2.6rem;
+	margin: 0;
+	display: flex;
+	align-items: flex-start;
+	gap: 0.85rem;
+	color: var(--tenue);
+	pointer-events: none;
+}
+
+.scorri .asta {
+	position: relative;
+	display: block;
+	flex: 0 0 auto;
+	width: var(--peso);
+	height: 4.6rem;
+	background: currentColor;
+	opacity: 0.4;
+}
+
+/* La punta: l'angolo di un quadrato ruotato, cioè due filetti dello stesso
+   peso di tutti gli altri del sito. Un carattere «↓» porterebbe con sé il
+   disegno di un'altra mano. */
+.scorri .asta::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	bottom: 0;
+	width: 0.46rem;
+	height: 0.46rem;
+	border-right: var(--peso) solid currentColor;
+	border-bottom: var(--peso) solid currentColor;
+	transform: translate(-50%, 28%) rotate(45deg);
+}
+
+/* Il tratto che scende. Sfumato in coda e pieno in testa: così sembra una
+   cosa che passa, non un trattino che trasla. */
+.scorri .asta::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 1.6rem;
+	background: linear-gradient(to bottom, transparent, var(--ink));
+	animation: sp-scorri 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes sp-scorri {
+	0% {
+		transform: translateY(-1.6rem);
+		opacity: 0;
+	}
+	28% {
+		opacity: 1;
+	}
+	70% {
+		opacity: 1;
+	}
+	100% {
+		transform: translateY(3rem);
+		opacity: 0;
+	}
+}
+
+.scorri .parola {
+	writing-mode: vertical-rl;
+	font-size: 0.7rem;
+	font-weight: 500;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	line-height: 1;
 }
 
 .apertura .occhiello {
@@ -373,67 +464,107 @@ main.in-stanza {
 	font-style: italic;
 }
 
-/* ═══════════════ le soglie ═══════════════
-   Cinque impaginazioni, non un'alternanza destra/sinistra. Il titolo
-   attraversa sempre la fotografia: larghezza piena, inchiostro pieno. */
+/* ═══════════════ il nastro ═══════════════
+   Un canale solo di fotografie — stessa larghezza, stessa altezza, stesso x —
+   che scende senza mai fermarsi, staccate da un filo di colore di fondo. La
+   continuità fra una stanza e l'altra non è un segno aggiunto: è fisica.
+
+   Tutta la varietà passa sul testo, che esce dal canale a sinistra a quote e
+   rientri diversi. È questa la differenza con le sei impaginazioni di prima:
+   i valori per soglia agiscono *contro* qualcosa di fermo, e si leggono come
+   decisioni invece che come tentativi.
+
+   Il bordo destro del canale non si muove mai. Oltre a tenere insieme il
+   nastro, garantisce per costruzione che nessuna fotografia arrivi addosso
+   alla didascalia. */
+.nastro {
+	/* Un'altezza sola per tutte e sei: sono loro il contenuto, il testo è la
+	   didascalia. Altezze diverse rimetterebbero in pagina proprio quello che
+	   il nastro toglie. */
+	--alt: 80vh;
+	--canale: 60%;
+	--salto: 1.1rem;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) var(--canale);
+	column-gap: 3.2rem;
+	row-gap: var(--salto);
+	padding: 0 3rem;
+}
+
 .soglia {
-	padding: 4.5rem 3rem 2rem;
-	/* L'àncora non incolla la soglia al bordo: lascia respirare sopra, e
-	   fa sì che al ritorno da una stanza la fotografia sia già in campo. */
-	scroll-margin-top: 12vh;
+	grid-column: 1 / -1;
+	display: grid;
+	grid-template-columns: subgrid;
+	/* Poco, e non 12vh come prima: la fotografia è alta quasi quanto lo
+	   schermo, e tornando da una stanza deve rientrare *tutta* in campo —
+	   se ne resta fuori un pezzo React le toglie il nome e la transizione
+	   si riduce a una dissolvenza. */
+	scroll-margin-top: 4vh;
+}
+
+/* Il legame avvolge tutta la soglia. La didascalia dev'essere una scatola
+   appiccicata sola — numero, titolo e riga insieme — e sta in una colonna
+   diversa dalla fotografia: un legame solo può tenere le due metà soltanto
+   contenendole entrambe. Due legami allo stesso posto sarebbero due voci
+   identiche in un lettore di schermo. */
+.soglia-a {
+	grid-column: 1 / -1;
+	display: grid;
+	grid-template-columns: subgrid;
+	align-items: start;
+	/* Dichiarata, e non è una rifinitura: è la scatola dentro cui la
+	   didascalia appiccicata si ferma. Senza un'altezza qui il blocco
+	   contenitore diventa tutto il nastro e le sei didascalie si impilano
+	   una sopra l'altra in cima alla pagina. */
+	height: var(--alt);
+}
+
+.soglia .testo {
+	grid-column: 1;
+	position: sticky;
+	top: 30vh;
+	z-index: 2;
+	margin-top: var(--quota, 0);
+	padding-left: var(--rientro, 0);
+	/* Lo sblocco a metà. La corsa di un elemento appiccicato è l'altezza del
+	   suo blocco contenitore meno il proprio margine: con mezza fotografia di
+	   margine sotto, il testo se ne va a metà e l'ultima metà la si guarda da
+	   sola. In `calc` e non `45%` perché i margini in percentuale si
+	   risolvono sulla larghezza, non sull'altezza. */
+	margin-bottom: calc(var(--alt) * 0.45);
+}
+
+.soglia figure {
+	grid-column: 2;
+	height: var(--alt);
+	overflow: hidden;
 }
 
 .soglia .numero {
 	margin-bottom: 1.1rem;
 }
 
-/* Fotografia e titolo stanno nello stesso legame: è un blocco, non un
-   riquadro, e non deve aggiungere nulla all'impaginazione. */
-.soglia-a {
-	display: block;
-}
-
-.soglia figure {
-	overflow: hidden;
-}
-
 .soglia .titolo {
 	display: block;
-	position: relative;
-	z-index: 3;
 	margin: 0;
-	width: 100%;
-	font-size: clamp(2.6rem, 8.2vw, 6.4rem);
-	line-height: 0.9;
-	letter-spacing: -0.034em;
+	/* Più piccolo di prima: il titolo non attraversa più la fotografia a
+	   piena larghezza, vive in una colonna stretta e fa la didascalia. */
+	font-size: clamp(2.2rem, 5.2vw, 4.2rem);
+	line-height: 0.92;
+	letter-spacing: -0.03em;
 	font-weight: 500;
 }
 
-/* ═══ la fascia ═══
-   Ogni riga del titolo si porta dietro una fascia del colore di fondo, larga
-   quanto il testo. Serve al contrasto: il titolo attraversa la fotografia, e
-   una fotografia può essere scura, chiara o variegata proprio lì sotto — su
-   uno schermo grande il problema si vede subito. Colore piatto e bordo netto,
-   niente sfumatura e niente `mix-blend-mode`: entrambi sono già stati provati
-   e bocciati, e soprattutto entrambi dipendono da che cosa c'è nella foto.
-   Questa no, e continuerà a funzionare con le fotografie che verranno.
+/* Un blocco per riga resta — i titoli vanno a capo dove decidiamo noi, e il
+   nome accessibile del legame dev'essere quello che si legge. La fascia
+   dietro invece non c'è più: nel nastro nessun titolo attraversa una
+   fotografia, e il contrasto non ha più niente da correggere.
 
-   I margini negativi valgono quanto il rientro della fascia, così il *testo*
-   — non la fascia — resta allineato al bordo del blocco, e la riga sotto il
-   titolo ci cade esattamente sotto. */
+   (Sfumature e `mix-blend-mode` restano bocciati: se mai servisse di nuovo un
+   titolo sopra una foto, non sono loro la risposta — dipendono entrambi da
+   che cosa c'è nell'immagine.) */
 .soglia .titolo .linea {
 	display: block;
-	width: fit-content;
-	background: var(--ground);
-	padding: 0.13em 0.14em;
-	margin-left: -0.14em;
-	margin-right: -0.14em;
-	/* Identica a quella del corpo pagina, e non è un vezzo: `--ground` cambia a
-	   ogni fotogramma mentre si scorre, e se la fascia lo seguisse di colpo
-	   mentre il fondo ci arriva in nove decimi si vedrebbe un rettangolo di un
-	   altro colore per tutta la durata del cambio. Stessa durata, stessa curva,
-	   stesso valore di partenza: le due superfici restano indistinguibili. */
-	transition: background-color 0.9s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .soglia .titolo em {
@@ -443,125 +574,36 @@ main.in-stanza {
 
 .soglia .riga {
 	margin: 1.4rem 0 0;
-	max-width: 26rem;
+	max-width: 20rem;
 	font-size: 1.06rem;
 	font-style: italic;
 	color: var(--tenue);
 }
 
-/* Le impaginazioni. Per ognuna, tre cose vanno insieme e vanno lette insieme:
-   dov'è la fotografia, da che parte è allineato il titolo, e dove cade la
-   riga sotto — che deve finire sullo stesso bordo del titolo, altrimenti si
-   legge come un disallineamento e non come una composizione. */
-.c1 figure {
-	width: 78%;
-	height: min(68vh, 540px);
-	margin-left: auto;
+/* Le sei quote: gli unici valori per soglia rimasti. */
+.n1 .testo {
+	--quota: 5vh;
+	--rientro: 0;
 }
-.c1 .titolo {
-	margin-top: -4.6rem;
-	text-align: left;
-	/* Rientro proporzionale: il corpo del titolo smette di crescere a 6.4rem
-	   mentre la pagina no, quindi su schermi molto larghi un titolo ancorato
-	   al margine finirebbe per sfiorare appena la fotografia. */
-	padding-left: 8%;
+.n2 .testo {
+	--quota: 2vh;
+	--rientro: 20%;
 }
-.c1 .riga {
-	margin-left: 8%;
+.n3 .testo {
+	--quota: 7vh;
+	--rientro: 7%;
 }
-
-.c2 figure {
-	width: 58%;
-	height: min(74vh, 600px);
+.n4 .testo {
+	--quota: 1vh;
+	--rientro: 28%;
 }
-.c2 .titolo {
-	margin-top: -3.2rem;
-	text-align: right;
-	/* «Le Foglie» è corto: allineato a destra sull'intera larghezza finirebbe
-	   lontano dalla fotografia, che qui sta a sinistra. Il titolo si ferma
-	   prima, così il bordo destro del testo cade dentro l'immagine. */
-	width: 62%;
+.n5 .testo {
+	--quota: 5vh;
+	--rientro: 3%;
 }
-.c2 .titolo .linea {
-	margin-left: auto;
-}
-.c2 .riga {
-	margin-left: auto;
-	/* 38% = il complemento della larghezza del titolo: il bordo destro dei due
-	   testi cade nello stesso punto. */
-	margin-right: 38%;
-	text-align: right;
-}
-
-.c3 figure {
-	width: 72%;
-	height: min(60vh, 470px);
-	margin-left: 14%;
-}
-.c3 .titolo {
-	margin-top: -6.2rem;
-	text-align: right;
-}
-.c3 .titolo .linea {
-	margin-left: auto;
-}
-.c3 .riga {
-	margin: 2.6rem 0 0 auto;
-	text-align: right;
-}
-
-.c4 figure {
-	width: 50%;
-	height: min(68vh, 560px);
-	margin-left: auto;
-	margin-right: 8%;
-}
-.c4 .titolo {
-	/* Due righe (il titolo va a capo apposta), quindi il rientro è maggiore:
-	   così entrambe attraversano la fotografia invece di sfiorarla. */
-	margin-top: -9.6rem;
-	text-align: right;
-}
-.c4 .titolo .linea {
-	margin-left: auto;
-}
-.c4 .riga {
-	margin-left: auto;
-	text-align: right;
-}
-
-.c5 figure {
-	width: 86%;
-	height: min(64vh, 510px);
-}
-.c5 .titolo {
-	margin-top: -4rem;
-	text-align: center;
-}
-.c5 .titolo .linea {
-	margin-inline: auto;
-}
-.c5 .riga {
-	margin: 1.6rem auto 0;
-	text-align: center;
-}
-
-.c6 figure {
-	width: 66%;
-	height: min(62vh, 500px);
-	margin-left: 22%;
-}
-.c6 .titolo {
-	margin-top: -7.4rem;
-	text-align: left;
-	padding-left: 26%;
-}
-.c6 .riga {
-	margin-left: 26%;
-}
-
-.respiro {
-	height: 9vh;
+.n6 .testo {
+	--quota: 3vh;
+	--rientro: 16%;
 }
 
 /* ═══════════════ il piede ═══════════════
@@ -1286,52 +1328,61 @@ body.tocca #disco {
 	}
 
 	.apertura {
-		padding: 3.4rem 1.2rem 2rem;
+		min-height: 86svh;
+		padding: 3.4rem 1.2rem 6rem;
+	}
+
+	.scorri {
+		left: 1.2rem;
+		bottom: 1.8rem;
+	}
+
+	.scorri .asta {
+		height: 3.4rem;
+	}
+
+	/* Il nastro si srotola su una colonna sola: a piena larghezza non c'è
+	   spazio per due, e il rientro del 28% porterebbe un titolo fuori dallo
+	   schermo. Cadono con le colonne anche le due cose che esistevano solo per
+	   loro — l'appiccicatura e lo sblocco a metà: qui il testo sta sotto la
+	   sua fotografia e scorre con lei. */
+	.nastro {
+		grid-template-columns: 1fr;
+		column-gap: 0;
+		row-gap: 0;
+		padding: 0 1.2rem;
+		--alt: 62svh;
 	}
 
 	.soglia {
-		padding: 2.4rem 1.2rem 1.2rem;
+		display: block;
+		scroll-margin-top: 1.4rem;
 	}
 
-	.soglia figure {
-		width: 100%;
-		height: 56vh;
-		margin: 0;
+	.soglia-a {
+		display: block;
+		height: auto;
 	}
 
-	/* Le sei impaginazioni collassano su una sola: a piena larghezza non c'è
-	   spazio per farle differire, e un titolo rientrato del 26% resterebbe
-	   fuori dallo schermo. Vanno azzerate tutte e tre le regolazioni — il
-	   rientro, la larghezza ridotta e l'allineamento — e anche quelle della
-	   riga sotto, che le segue. */
-	.soglia .titolo,
-	.c1 .titolo,
-	.c2 .titolo,
-	.c6 .titolo {
-		margin-top: -2.4rem;
-		text-align: left;
+	/* Il vuoto grande va *sopra* la didascalia, non sotto: su una colonna sola
+	   il titolo introduce la fotografia che ha subito sotto, e se i due
+	   distacchi fossero uguali si leggerebbe come la coda di quella prima. */
+	.soglia .testo {
+		position: static;
+		margin: 3.6rem 0 1.4rem;
 		padding-left: 0;
-		width: 100%;
 	}
 
-	.soglia .titolo .linea,
-	.c2 .titolo .linea,
-	.c3 .titolo .linea,
-	.c4 .titolo .linea,
-	.c5 .titolo .linea {
-		margin-left: -0.14em;
-		margin-right: -0.14em;
+	.n1 .testo {
+		margin-top: 0;
 	}
 
-	.soglia .riga,
-	.c1 .riga,
-	.c2 .riga,
-	.c3 .riga,
-	.c4 .riga,
-	.c5 .riga,
-	.c6 .riga {
-		margin: 1.2rem 0 0;
-		text-align: left;
+	.soglia .titolo {
+		font-size: clamp(2.1rem, 9.2vw, 3rem);
+	}
+
+	.soglia .riga {
+		margin-top: 1.2rem;
 	}
 
 	/* Il cursore personalizzato non esiste qui, quindi non c'è niente che
@@ -1410,9 +1461,8 @@ body.tocca #disco {
 		scroll-behavior: auto;
 	}
 
-	body,
-	#margine {
-		transition: none;
+	.scorri .asta::before {
+		animation: none;
 	}
 
 	body.cursore-attivo #cursore {

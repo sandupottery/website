@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Fragment, ViewTransition } from "react";
+import { ViewTransition } from "react";
 import type { Lingua } from "@/content/collezioni";
 import { apertura, collezioni, romano, voci } from "@/content/collezioni";
 import { percorsoStanza } from "@/lib/percorsi";
@@ -14,17 +14,23 @@ import { Scorrimento } from "./Scorrimento";
 const CARTA = "#F5F2EB";
 
 /**
- * La home: un percorso di fotografie e sei soglie.
+ * La home: un nastro di fotografie e sei soglie.
  *
  * Poche parole in tutto. Il discorso lungo sta nelle stanze; qui ogni stanza ha
- * una fotografia, il suo nome che le attraversa sopra e una riga sola. Le
- * impaginazioni (`c1`…`c6`) sono diverse di proposito: un'alternanza
- * destra/sinistra si legge come una griglia, e la pagina tornerebbe immobile.
+ * una fotografia grande, il suo nome accanto e una riga sola.
  *
- * Fotografia e titolo stanno **dentro lo stesso legame**, e non è un dettaglio:
- * su un telefono il cursore non esiste e senza questo nulla direbbe che la
- * soglia si apre. Un legame solo, non due che puntano allo stesso posto, perché
- * due voci identiche in un lettore di schermo sono rumore.
+ * **Il nastro.** Le sei fotografie stanno in un canale solo, tutte della stessa
+ * larghezza e della stessa altezza, staccate di un filo di colore: la
+ * continuità fra una stanza e l'altra non è un segno aggiunto, è fisica. Tutta
+ * la varietà passa sul testo, che esce dal canale a sinistra a quote e rientri
+ * diversi e resta fermo mentre la sua fotografia gli scorre accanto.
+ *
+ * **Il legame avvolge tutta la soglia**, e non è un dettaglio: su un telefono
+ * il cursore non esiste e senza questo nulla direbbe che la soglia si apre. Un
+ * legame solo, non due che puntano allo stesso posto, perché due voci identiche
+ * in un lettore di schermo sono rumore — e tenere insieme le due metà (la
+ * didascalia a sinistra, la fotografia a destra) si può solo contenendole
+ * entrambe.
  *
  * Ogni soglia è anche la metà di casa di una transizione: la fotografia e il
  * titolo hanno lo stesso `name` degli omologhi nella stanza, quindi il browser
@@ -53,63 +59,74 @@ export function Casa({ lingua }: { lingua: Lingua }) {
 						<span className="p5">{apertura.quattro[lingua]}</span>
 						{apertura.cinque[lingua]}
 					</h1>
+
+					{/* Il primo schermo non contiene altro che la frase: questo dice che
+					    sotto c'è dell'altro, ed è l'unica cosa che ha il diritto di
+					    muoversi da sola in tutta la pagina. Nascosto ai lettori di
+					    schermo — «scorri» non è un'informazione per chi non scorre. */}
+					<p className="scorri" aria-hidden="true">
+						<span className="asta" />
+						<span className="parola">{voci.scorri[lingua]}</span>
+					</p>
 				</section>
 
-				{collezioni.map((c, i) => (
-					<Fragment key={c.slug}>
+				<div className="nastro">
+					{collezioni.map((c, i) => (
 						<section
+							key={c.slug}
 							id={c.slug}
-							className={`soglia c${i + 1}`}
+							className={`soglia n${i + 1}`}
 							data-fondo={c.fondo}
 							data-sez={c.slug}
 						>
-							{/* Il numero romano al posto di «Collezione uno»: dice la stessa
-							    cosa — a che punto del percorso siamo — senza fingere di
-							    essere un'informazione. */}
-							<p className="numero" aria-hidden="true">
-								{romano(i)}
-							</p>
-
-							{/* Nessun `aria-label`: il nome del legame se lo dànno la
-							    descrizione della fotografia e il titolo che contiene. Una
+							{/* Nessun `aria-label`: il nome del legame se lo dànno il titolo,
+							    la riga e la descrizione della fotografia che contiene. Una
 							    etichetta esplicita sarebbe più breve, ma su un titolo che
 							    va a capo non combacerebbe mai con il testo che si vede —
 							    e chi comanda il browser a voce pronuncia quello. */}
 							<Link className="soglia-a" href={percorsoStanza(lingua, c.slug)} data-glifo="↗">
+								<div className="testo">
+									{/* Il numero romano al posto di «Collezione uno»: dice la
+									    stessa cosa — a che punto del percorso siamo — senza
+									    fingere di essere un'informazione. */}
+									<p className="numero" aria-hidden="true">
+										{romano(i)}
+									</p>
+
+									<ViewTransition name={`titolo-${c.slug}`} share="titolo-morph" default="none">
+										<h2 className="titolo">
+											{righe(c.titolo[lingua]).map((riga, n, tutte) => (
+												<span className="linea" key={riga.chiave}>
+													{riga.nodi}
+													{/* Uno spazio vero fra una riga e l'altra. Due blocchi
+													    adiacenti senza spazio danno «Ciondoli eOrecchini»
+													    come testo dell'elemento, e il nome accessibile del
+													    legame non corrisponderebbe più a quello che si
+													    legge. In fine di riga lo spazio non si vede: il CSS
+													    lo lascia cadere. */}
+													{n < tutte.length - 1 ? " " : null}
+												</span>
+											))}
+										</h2>
+									</ViewTransition>
+
+									<p className="riga">{c.riga[lingua]}</p>
+								</div>
+
 								<ViewTransition name={`eroe-${c.slug}`} share="morph" default="none">
 									<figure>
 										<Immagine
 											foto={c.soglia.foto}
 											alt={c.soglia.alt[lingua]}
 											fuoco={c.soglia.fuoco}
-											subito={i === 0}
+											sizes="(max-width: 880px) 100vw, 60vw"
 										/>
 									</figure>
 								</ViewTransition>
-
-								<ViewTransition name={`titolo-${c.slug}`} share="titolo-morph" default="none">
-									<h2 className="titolo">
-										{righe(c.titolo[lingua]).map((riga, n, tutte) => (
-											<span className="linea" key={riga.chiave}>
-												{riga.nodi}
-												{/* Uno spazio vero fra una riga e l'altra. Due blocchi
-												    adiacenti senza spazio danno «Ciondoli eOrecchini»
-												    come testo dell'elemento, e il nome accessibile del
-												    legame non corrisponderebbe più a quello che si
-												    legge. In fine di riga lo spazio non si vede: il CSS
-												    lo lascia cadere. */}
-												{n < tutte.length - 1 ? " " : null}
-											</span>
-										))}
-									</h2>
-								</ViewTransition>
 							</Link>
-
-							<p className="riga">{c.riga[lingua]}</p>
 						</section>
-						<div className="respiro" />
-					</Fragment>
-				))}
+					))}
+				</div>
 			</main>
 
 			<Piede lingua={lingua} />

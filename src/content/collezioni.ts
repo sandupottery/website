@@ -750,6 +750,7 @@ export const voci = {
 	altraLingua: { it: "English", en: "Italiano" },
 	saltaAlContenuto: { it: "Salta al contenuto", en: "Skip to content" },
 	indice: { it: "Le stanze", en: "The rooms" },
+	scorri: { it: "Scorri", en: "Scroll" },
 	descrizione: {
 		it: "Ceramica fatta a mano a Bergamo: tazze, foglie, animali, ciondoli e orecchini. Ogni pezzo è modellato e decorato uno per volta.",
 		en: "Handmade ceramics from Bergamo: cups, leaves, animals, pendants and earrings. Every piece is shaped and decorated one at a time.",

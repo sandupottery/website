@@ -12,20 +12,21 @@ const esadecimale = (h: string): [number, number, number] => [
 const mescola = (a: number[], b: number[], t: number) =>
 	`rgb(${a.map((v, i) => Math.round(v + ((b[i] ?? v) - v) * t)).join(",")})`;
 
-/** Nell'ultimo 30% di una soglia il fondo inizia a diventare quello dopo. */
-const CODA = 0.3;
-
 /**
- * Il moto della home. Tre cose, tutte legate allo scorrimento, tutte inutili
- * altrove — per questo vivono qui e non nel layout.
+ * Il moto della home. Cinque cose, tutte legate allo scorrimento, tutte
+ * inutili altrove — per questo vivono qui e non nel layout.
  *
  * 1. Il fondo. Ogni soglia porta il colore di uno smalto e il fondo scivola
- *    da un colore all'altro mentre si scorre. Scrive `--ground` in linea su
- *    <html>: lo leggono sia il corpo sia il margine (vedi globals.css). Alla
- *    smontatura lo rimuove, perché nelle stanze il colore è fisso e arriva
- *    già dal server — se restasse in linea vincerebbe lui.
- * 2. La voce corrente nell'indice del margine.
- * 3. Il ritorno da una stanza. Il legame «Torna» punta a `/#foglie`: qui lo
+ *    da un colore all'altro **per tutta l'altezza della soglia**: la rampa è
+ *    piena, non una coda concentrata negli ultimi centimetri. Scrive
+ *    `--ground` in linea su <html>: lo leggono sia il corpo sia il margine
+ *    (vedi globals.css). Alla smontatura lo rimuove, perché nelle stanze il
+ *    colore è fisso e arriva già dal server — se restasse in linea
+ *    vincerebbe lui.
+ * 2. Il glifo dello scorri, che svanisce ai primi centimetri di pagina.
+ * 3. La voce corrente nell'indice del margine.
+ * 4. L'indice come via d'ingresso: scorre fino alla soglia e *poi* ci entra.
+ * 5. Il ritorno da una stanza. Il legame «Torna» punta a `/#foglie`: qui lo
  *    si onora *prima* della pittura, così la fotografia della soglia è già
  *    al suo posto quando il browser fotografa la pagina nuova. Senza questo
  *    il titolo non avrebbe nulla in cui ritrasformarsi e la transizione
@@ -58,8 +59,12 @@ export function Scorrimento() {
 				if (r.top > mezzo) return;
 				corrente = s;
 				prossima = soglie[i + 1] ?? s;
-				const p = Math.min(Math.max((mezzo - r.top) / Math.max(r.height, 1), 0), 1);
-				t = p > 1 - CODA ? (p - (1 - CODA)) / CODA : 0;
+				// La rampa piena: quanto della soglia è passato sopra la fascia
+				// centrale *è* la mescolanza. Al confine `corrente` avanza e `t`
+				// riparte da zero, dove `mescola(dopo, dopo+1, 0)` vale esattamente
+				// il colore a cui la mescolanza precedente era arrivata — quindi il
+				// passaggio è continuo senza bisogno di alcuna transizione CSS.
+				t = Math.min(Math.max((mezzo - r.top) / Math.max(r.height, 1), 0), 1);
 			});
 			if (!corrente || !prossima) return;
 			radice.style.setProperty(
@@ -72,16 +77,25 @@ export function Scorrimento() {
 			);
 		};
 
+		// Il glifo dell'apertura: ha detto la sua cosa nel momento in cui si
+		// comincia a scorrere, e da lì in poi è rumore.
+		const glifo = document.querySelector<HTMLElement>(".scorri");
+		const sfuma = () => {
+			if (glifo) glifo.style.opacity = String(Math.max(0, 1 - scrollY / 260));
+		};
+
 		const alloScorrere = () => {
 			if (inCoda) return;
 			inCoda = true;
 			requestAnimationFrame(() => {
 				tingi();
+				sfuma();
 				inCoda = false;
 			});
 		};
 
 		tingi();
+		sfuma();
 		addEventListener("scroll", alloScorrere, { passive: true });
 
 		// La voce corrente: la soglia che occupa la fascia centrale dello schermo.
@@ -110,8 +124,74 @@ export function Scorrimento() {
 		);
 		for (const s of soglie) osservatore.observe(s);
 
+		// ─── l'indice come via d'ingresso ───
+		// Una voce dell'indice non porta più soltanto *davanti* a una soglia: ci
+		// entra. Lo scorrimento prima non è una cortesia, è la condizione perché
+		// l'ingresso sia una crescita e non una dissolvenza — React toglie il
+		// `view-transition-name` da qualunque elemento fuori campo al momento del
+		// commit, e senza scorrere la fotografia non c'è.
+		//
+		// L'`href="#slug"` resta nel marcato: senza JavaScript l'indice continua
+		// a scorrere, che è il comportamento degradato giusto.
+		const indice = document.querySelector<HTMLElement>("#margine .indice");
+		const ridotto = matchMedia("(prefers-reduced-motion: reduce)");
+		/** Le attese in corso, da annullare alla smontatura: un ingresso già
+		 *  avvenuto non deve trascinarsi dietro un secondo clic. */
+		const annulla: Array<() => void> = [];
+
+		const entra = (e: MouseEvent) => {
+			// Un cmd-clic deve continuare ad aprire una scheda.
+			if (e.defaultPrevented || e.button !== 0) return;
+			if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+			const voce = (e.target as Element | null)?.closest<HTMLAnchorElement>("a[data-sez]");
+			const sez = voce?.dataset.sez ? document.getElementById(voce.dataset.sez) : null;
+			const porta = sez?.querySelector<HTMLAnchorElement>(".soglia-a");
+			if (!sez || !porta) return;
+
+			e.preventDefault();
+
+			// Un clic vero, non `router.push`: così l'ingresso prende esattamente
+			// la stessa strada che prenderebbe il dito di chi legge.
+			if (Math.abs(sez.getBoundingClientRect().top) < 8) {
+				porta.click();
+				return;
+			}
+
+			sez.scrollIntoView({ behavior: ridotto.matches ? "instant" : "smooth", block: "start" });
+
+			// Si entra quando lo scorrimento si è fermato, e fermo vuol dire
+			// fermo: tre fotogrammi alla stessa quota. Un `setTimeout` a occhio
+			// scatterebbe a metà corsa quando la soglia è lontana — e sarebbe
+			// proprio il caso in cui entrare senza la fotografia in campo rovina
+			// la transizione. `scrollend` farebbe lo stesso lavoro ma non c'è su
+			// Safari prima della 18.2, e questo non ha bisogno di saperlo.
+			let fermo = 0;
+			let ultimo = Number.NaN;
+			let rif = 0;
+			const smetti = () => cancelAnimationFrame(rif);
+			const guarda = () => {
+				if (scrollY === ultimo) fermo += 1;
+				else {
+					fermo = 0;
+					ultimo = scrollY;
+				}
+				if (fermo >= 3) {
+					porta.click();
+					return;
+				}
+				rif = requestAnimationFrame(guarda);
+			};
+			rif = requestAnimationFrame(guarda);
+			annulla.push(smetti);
+		};
+
+		indice?.addEventListener("click", entra);
+
 		return () => {
 			removeEventListener("scroll", alloScorrere);
+			indice?.removeEventListener("click", entra);
+			for (const a of annulla) a();
 			osservatore.disconnect();
 			radice.style.removeProperty("--ground");
 		};
