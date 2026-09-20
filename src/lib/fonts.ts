@@ -1,20 +1,29 @@
 import localFont from "next/font/local";
 
-// Quicksand — display face. Matches the lettering of the client's own logo,
-// so the wordmark and the page read as one system.
-export const quicksand = localFont({
-	src: [{ path: "../fonts/Quicksand.woff2", style: "normal", weight: "400 700" }],
-	variable: "--font-display-var",
-	display: "swap",
-});
-
-// Newsreader — body face. Warm, low-contrast text serif that holds up in the
-// dense rows of the market calendar.
-export const newsreader = localFont({
+/**
+ * Boska (Fontshare, licenza libera anche per uso commerciale) è l'unico
+ * carattere del sito: titoli e prosa. Le differenze le fanno il peso,
+ * il corsivo e la dimensione — non un secondo carattere.
+ *
+ * Il file è servito da noi, non dal CDN di Fontshare: niente richieste a
+ * terzi, niente flash di carattere di sistema, niente dipendenza da un
+ * servizio esterno per un sito che deve restare in piedi da solo.
+ *
+ * Nulla sotto il peso 300, e il 300 solo in corsivo e in grande (l'apertura
+ * della home): ai corpi piccoli è illeggibile.
+ */
+export const boska = localFont({
 	src: [
-		{ path: "../fonts/Newsreader.woff2", style: "normal", weight: "300 500" },
-		{ path: "../fonts/Newsreader-Italic.woff2", style: "italic", weight: "300 500" },
+		{ path: "../fonts/Boska-300.woff2", weight: "300", style: "normal" },
+		{ path: "../fonts/Boska-300i.woff2", weight: "300", style: "italic" },
+		{ path: "../fonts/Boska-400.woff2", weight: "400", style: "normal" },
+		{ path: "../fonts/Boska-400i.woff2", weight: "400", style: "italic" },
+		{ path: "../fonts/Boska-500.woff2", weight: "500", style: "normal" },
+		{ path: "../fonts/Boska-500i.woff2", weight: "500", style: "italic" },
+		{ path: "../fonts/Boska-700.woff2", weight: "700", style: "normal" },
+		{ path: "../fonts/Boska-700i.woff2", weight: "700", style: "italic" },
 	],
-	variable: "--font-testo-var",
+	variable: "--font-boska",
 	display: "swap",
+	fallback: ["Georgia", "serif"],
 });

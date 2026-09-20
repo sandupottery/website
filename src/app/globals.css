@@ -1,69 +1,921 @@
 @import "tailwindcss";
 
-@theme {
-	/* ── Colori, campionati dagli smalti ── */
-	--color-sp-porcellana: #faf7f3;
-	--color-sp-sabbia: #ede3d6;
-	--color-sp-inchiostro: #241f1c;
-	--color-sp-testo: #4a423d;
-	--color-sp-tenue: #5b534e;
-	--color-sp-nota: #6e645b;
-	--color-sp-terracotta: #c2603a;
-	--color-sp-terracotta-scritta: #9a4526;
-	--color-sp-rosa: #e4a896;
-	--color-sp-glassa: #9faebd;
-	--color-sp-verderame: #4a6654;
-	--color-sp-bordo: #dfd1bf;
+/* ═══════════════════════════════════════════════════════════════════════
+   Sandu Pottery — il sito definitivo.
 
-	/* ── Caratteri ── */
-	/* Ponte fra le variabili di next/font (su <html>) e le utility Tailwind */
-	--font-display: var(--font-display-var);
-	--font-testo: var(--font-testo-var);
+   Nota sul perché questo file è CSS scritto a mano e non classi Tailwind:
+   l'impaginazione della home non è una griglia, è cinque impaginazioni
+   diverse — ognuna con la sua larghezza, la sua altezza e il suo rientro
+   del titolo sulla fotografia. Espressa in utility diventerebbe una riga
+   di quaranta valori arbitrari per elemento, impossibile da rileggere e da
+   ritoccare. Tailwind resta per i token (@theme) e per i componenti futuri
+   (il calendario dei mercatini); il disegno vive qui, con nomi propri.
+
+   La tesi: il disegno è severo, il calore è il contenuto. Filetti netti,
+   caratteri grandi e silenziosi, nessun ornamento, nessun colore che non
+   venga da uno smalto. Il calore lo portano le sue fotografie e la sua voce.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@theme {
+	/* Fondi: campionati dagli smalti, uno per collezione. */
+	--color-sp-carta: #f5f2eb;
+	--color-sp-tettazze: #dce3dd;
+	--color-sp-foglie: #c9cfbe;
+	--color-sp-animali: #dbc3ac;
+	--color-sp-ciondoli: #c3d0cd;
+
+	/* Inchiostri. `--color-sp-tenue` è misurato: 4.51:1 sul fondo peggiore
+	   (animali), quindi supera AA su tutti e cinque i fondi. Non schiarirlo
+	   senza rimisurare — vedi docs/brand.md. */
+	--color-sp-inchiostro: #1b1712;
+	--color-sp-tenue: #5c5247;
+
+	--font-testo: var(--font-boska);
+}
+
+:root {
+	--ground: var(--color-sp-carta);
+	--ink: var(--color-sp-inchiostro);
+	--tenue: var(--color-sp-tenue);
+	/* Il peso dei filetti. È un valore solo: margine, didascalie e divisori
+	   devono essere lo stesso segno, altrimenti la pagina perde fermezza. */
+	--peso: 1.5px;
+	--rail: 11rem;
+	/* Una curva sola per ogni cambio di forma del cursore: i due stati
+	   sembrano un oggetto che si apre, non due disegni che si scambiano. */
+	--molla: cubic-bezier(0.22, 1.2, 0.32, 1);
 }
 
 @layer base {
-	:root {
+	* {
+		box-sizing: border-box;
+	}
+
+	html {
 		color-scheme: light;
+		/* L'indice del margine sono àncore vere: lo scorrimento dolce è del
+		   browser, non di uno script. */
+		scroll-behavior: smooth;
 	}
 
 	body {
-		background-color: var(--color-sp-porcellana);
-		color: var(--color-sp-inchiostro);
+		margin: 0;
+		background-color: var(--ground);
+		color: var(--ink);
+		font-family: var(--font-testo), Georgia, serif;
+		font-weight: 400;
+		font-size: 18px;
+		line-height: 1.62;
+		-webkit-font-smoothing: antialiased;
+		transition: background-color 0.9s cubic-bezier(0.4, 0, 0.2, 1);
 	}
 
-	/* Una sola animazione in tutto il sito, e si disattiva su richiesta */
-	@media (prefers-reduced-motion: no-preference) {
-		.sp-entra {
-			animation: sp-entra 0.5s ease-out both;
-		}
+	a {
+		color: inherit;
+		text-decoration: none;
 	}
 
-	@keyframes sp-entra {
-		from {
-			opacity: 0;
-			transform: translateY(12px);
-		}
-		to {
-			opacity: 1;
-			transform: none;
-		}
+	img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
 	}
 
-	/* Lo stato di partenza vive nel CSS, non in un attributo che React
-	   possiede: l'idratazione ripristinerebbe il proprio valore di `hidden`
-	   e annullerebbe lo script. React non tocca element.style se il
-	   componente non passa una prop `style`, quindi lo script usa quello.
+	figure {
+		margin: 0;
+	}
 
-	   [data-nessun-prossimo] (il fallback della carta "prossimo mercatino",
-	   in CartaProssimo.tsx) è DELIBERATAMENTE assente da questo elenco: parte
-	   visibile e lo script lo nasconde quando trova una data valida — polarità
-	   invertita rispetto a tutto il resto qui sotto, che parte nascosto e
-	   viene rivelato. Le due direzioni sono entrambe corrette e volute; non
-	   "correggere" aggiungendolo qui, altrimenti la carta in testa alla
-	   pagina mostrerebbe sempre lo stato vuoto. */
-	[data-voce-prossimo],
-	[data-nessuna-data],
-	[data-etichetta-oggi] {
+	/* La messa a fuoco resta visibile: il cursore personalizzato non la
+	   sostituisce, chi naviga da tastiera non lo vede nemmeno. */
+	:focus-visible {
+		outline: var(--peso) solid var(--ink);
+		outline-offset: 4px;
+	}
+}
+
+/* ═══ l'occhiello: piccolo, spaziato, mai sotto il peso 500 ═══ */
+.occhiello {
+	margin: 0;
+	font-size: 0.74rem;
+	font-weight: 500;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--tenue);
+}
+
+/* ═══════════════ il margine ═══════════════
+   In home è una colonna a sinistra; in una stanza è una barra in basso.
+   È lo stesso elemento: il layout persiste fra le rotte, quindi il browser
+   lo vede cambiare forma e lo anima da solo (view-transition-name). */
+#margine {
+	position: fixed;
+	inset: 0 auto 0 0;
+	width: var(--rail);
+	z-index: 50;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	gap: 1.5rem;
+	padding: 1.9rem 0 1.9rem 1.6rem;
+	border-right: var(--peso) solid var(--ink);
+	background: var(--ground);
+	transition: background-color 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+	view-transition-name: margine;
+}
+
+/* Durante la transizione il margine diventa trasparente: così si spostano
+   solo la scritta e il filetto, non un blocco di colore. */
+html.in-vt #margine {
+	background: transparent;
+}
+
+#margine .marchio {
+	writing-mode: vertical-rl;
+	transform: rotate(180deg);
+	align-self: flex-start;
+	font-size: 1.45rem;
+	font-weight: 500;
+	letter-spacing: 0.03em;
+}
+
+#margine .indice {
+	display: flex;
+	flex-direction: column;
+	font-size: 0.86rem;
+	line-height: 2.05;
+	color: var(--tenue);
+}
+
+#margine .indice a {
+	transition: color 0.3s;
+}
+
+#margine .indice a:hover,
+#margine .indice a[aria-current="true"] {
+	color: var(--ink);
+}
+
+#margine .indice a[aria-current="true"] {
+	font-weight: 500;
+}
+
+.lingua {
+	align-self: flex-start;
+	font-size: 0.74rem;
+	font-weight: 500;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--tenue);
+	border-bottom: var(--peso) solid currentColor;
+	padding-bottom: 0.15rem;
+	transition: color 0.3s;
+}
+
+.lingua:hover {
+	color: var(--ink);
+}
+
+#margine .coda {
+	display: none;
+}
+
+/* — la barra in basso, dentro una stanza — */
+#margine.barra {
+	inset: auto 0 0 0;
+	width: auto;
+	height: 3.3rem;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1.5rem;
+	padding: 0 2.2rem 0 1.6rem;
+	border-right: 0;
+	border-top: var(--peso) solid var(--ink);
+}
+
+#margine.barra .marchio {
+	writing-mode: horizontal-tb;
+	transform: none;
+	align-self: center;
+	font-size: 1.15rem;
+	line-height: 1;
+}
+
+#margine.barra .indice {
+	display: none;
+}
+
+#margine.barra .coda {
+	display: flex;
+	align-items: center;
+	gap: 2.4rem;
+	line-height: 1;
+}
+
+#margine.barra .lingua {
+	align-self: center;
+}
+
+#margine .coda .torna {
+	font-size: 0.8rem;
+	font-weight: 500;
+	letter-spacing: 0.13em;
+	text-transform: uppercase;
+}
+
+#margine .coda .avanti {
+	font-size: 1.05rem;
+	letter-spacing: -0.01em;
+}
+
+#margine .coda .avanti em {
+	font-style: italic;
+}
+
+main {
+	padding-left: var(--rail);
+}
+
+main.in-stanza {
+	padding-left: 0;
+	padding-bottom: 3.3rem;
+}
+
+/* ═══════════════ l'apertura ═══════════════
+   Pochi pesi, scelti: 700 → 300 corsivo → 400, poi un occhiello, poi 700
+   corsivo. Non una scala che sale, che leggerebbe come un gradiente. */
+.apertura {
+	padding: 7.5rem 3rem 4rem;
+	max-width: 60rem;
+}
+
+.apertura .occhiello {
+	margin-bottom: 2.4rem;
+}
+
+.apertura h1 {
+	margin: 0;
+	font-weight: 400;
+	font-size: clamp(2.1rem, 5.6vw, 4.2rem);
+	line-height: 1.08;
+	letter-spacing: -0.025em;
+}
+
+.apertura .p1 {
+	font-weight: 700;
+}
+
+.apertura .p2 {
+	font-weight: 300;
+	font-style: italic;
+	font-size: 1.18em;
+}
+
+.apertura .p4 {
+	display: block;
+	margin: 1.5rem 0 0.9rem;
+	font-size: 0.4em;
+	font-weight: 500;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	line-height: 1.5;
+	color: var(--tenue);
+}
+
+.apertura .p5 {
+	font-weight: 700;
+	font-style: italic;
+}
+
+/* ═══════════════ le soglie ═══════════════
+   Cinque impaginazioni, non un'alternanza destra/sinistra. Il titolo
+   attraversa sempre la fotografia: larghezza piena, inchiostro pieno. */
+.soglia {
+	padding: 4.5rem 3rem 2rem;
+	/* L'àncora non incolla la soglia al bordo: lascia respirare sopra, e
+	   fa sì che al ritorno da una stanza la fotografia sia già in campo. */
+	scroll-margin-top: 12vh;
+}
+
+.soglia .occhiello {
+	margin-bottom: 1.1rem;
+}
+
+.soglia figure {
+	overflow: hidden;
+}
+
+.soglia .titolo {
+	display: block;
+	position: relative;
+	z-index: 3;
+	width: 100%;
+	font-size: clamp(2.6rem, 8.2vw, 6.4rem);
+	line-height: 0.9;
+	letter-spacing: -0.034em;
+	font-weight: 500;
+}
+
+.soglia .titolo em {
+	font-style: italic;
+	font-weight: 400;
+}
+
+.soglia .riga {
+	margin: 1.4rem 0 0;
+	max-width: 26rem;
+	font-size: 1.06rem;
+	font-style: italic;
+	color: var(--tenue);
+}
+
+.c1 figure {
+	width: 78%;
+	height: min(68vh, 540px);
+	margin-left: auto;
+}
+.c1 .titolo {
+	margin-top: -4.6rem;
+	text-align: left;
+	/* Rientro proporzionale: il corpo del titolo smette di crescere a 6.4rem
+	   mentre la pagina no, quindi su schermi molto larghi un titolo ancorato
+	   al margine finirebbe per sfiorare appena la fotografia. */
+	padding-left: 8%;
+}
+
+.c2 figure {
+	width: 58%;
+	height: min(74vh, 600px);
+}
+.c2 .titolo {
+	margin-top: -3.2rem;
+	text-align: right;
+	/* «Le Foglie» è corto: allineato a destra sull'intera larghezza finirebbe
+	   lontano dalla fotografia, che qui sta a sinistra. Il titolo si ferma
+	   prima, così il bordo destro del testo cade dentro l'immagine. */
+	width: 62%;
+}
+.c2 .riga {
+	margin-left: auto;
+	text-align: right;
+}
+
+.c3 figure {
+	width: 72%;
+	height: min(60vh, 470px);
+	margin-left: 14%;
+}
+.c3 .titolo {
+	margin-top: -6.2rem;
+	text-align: right;
+}
+.c3 .riga {
+	margin: 2.6rem 0 0 14%;
+}
+
+.c4 figure {
+	width: 50%;
+	height: min(68vh, 560px);
+	margin-left: auto;
+	margin-right: 8%;
+}
+.c4 .titolo {
+	/* Due righe (il titolo va a capo apposta), quindi il rientro è maggiore:
+	   così entrambe attraversano la fotografia invece di sfiorarla. */
+	margin-top: -9.6rem;
+	text-align: right;
+}
+
+.c4 .riga {
+	margin-left: auto;
+	text-align: right;
+}
+
+.c5 figure {
+	width: 86%;
+	height: min(64vh, 510px);
+}
+.c5 .titolo {
+	margin-top: -4rem;
+	text-align: center;
+}
+.c5 .riga {
+	margin: 1.6rem auto 0;
+	text-align: center;
+}
+
+.respiro {
+	height: 9vh;
+}
+
+/* ═══════════════ la stanza ═══════════════ */
+.st-testa {
+	padding: 4.2rem 3rem 0;
+}
+
+.st-testa .riga2 {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
+	gap: 3rem;
+	align-items: end;
+}
+
+/* Stesso peso, stessa spaziatura e stessa formula di dimensione del titolo
+   di casa: così la transizione è una scalata, non una dissolvenza fra due
+   scritte di forma diversa. */
+.st-testa h1 {
+	margin: 0.7rem 0 0;
+	font-size: clamp(2.6rem, 8.2vw, 6.4rem);
+	line-height: 0.9;
+	letter-spacing: -0.034em;
+	font-weight: 500;
+}
+
+.st-testa h1 em {
+	font-style: italic;
+	font-weight: 400;
+}
+
+.st-testa .guida {
+	margin: 0 0 0.6rem;
+	font-size: 1.18rem;
+	line-height: 1.5;
+	font-style: italic;
+	color: var(--tenue);
+}
+
+.st-eroe {
+	margin: 2.4rem 3rem 0;
+	height: min(72vh, 580px);
+	overflow: hidden;
+}
+
+.blocco {
+	padding: 3.2rem 3rem 0;
+	display: grid;
+	grid-template-columns: 10rem minmax(0, 40rem);
+	gap: 3rem;
+}
+
+.blocco > div p {
+	margin: 0 0 1.15rem;
+	font-size: 1.05rem;
+	line-height: 1.75;
+}
+
+.blocco > div p:first-child {
+	font-size: 1.5rem;
+	line-height: 1.4;
+	margin-bottom: 1.6rem;
+	letter-spacing: -0.012em;
+}
+
+.rilievo {
+	font-weight: 500;
+}
+
+/* — il catalogo: una riga per pezzo, nome — filetto — prezzo — */
+.gruppo {
+	padding: 3.4rem 3rem 0;
+}
+
+.gruppo .scatti {
+	display: grid;
+	gap: 1.6rem;
+}
+
+.gruppo.due .scatti {
+	grid-template-columns: 1fr 1fr;
+}
+
+.gruppo.due .scatti .pz:nth-child(2) {
+	margin-top: 3.4rem;
+}
+
+.gruppo .pz figure {
+	height: min(58vh, 460px);
+}
+
+.gruppo.uno .pz figure {
+	height: min(80vh, 640px);
+}
+
+.voce {
+	display: flex;
+	align-items: baseline;
+	gap: 0.85rem;
+	margin-top: 0.75rem;
+}
+
+.voce .nome {
+	font-size: 0.98rem;
+}
+
+.voce .nome i {
+	font-style: italic;
+	color: var(--tenue);
+	font-size: 0.85rem;
+	margin-left: 0.4rem;
+}
+
+.voce .tratto {
+	flex: 1 1 auto;
+	border-bottom: var(--peso) solid var(--ink);
+	transform: translateY(-0.3em);
+}
+
+.voce .prezzo {
+	font-size: 0.78rem;
+	font-weight: 500;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--tenue);
+	white-space: nowrap;
+}
+
+.incontri {
+	padding: 3.6rem 3rem 4.5rem;
+	display: grid;
+	grid-template-columns: 10rem minmax(0, 40rem);
+	gap: 3rem;
+}
+
+.incontri blockquote {
+	margin: 0 0 2.1rem;
+	font-size: 1.12rem;
+	line-height: 1.66;
+}
+
+.incontri blockquote footer {
+	margin-top: 0.55rem;
+	font-size: 0.74rem;
+	font-weight: 500;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--tenue);
+}
+
+.coda-stanza {
+	height: 3rem;
+}
+
+/* Solo fra una stanza e l'altra: vedi `Cima`. */
+@media (prefers-reduced-motion: no-preference) {
+	main.in-stanza.appena-entrata {
+		animation: sp-dissolvi 0.42s cubic-bezier(0.4, 0, 0.2, 1) both;
+	}
+}
+
+/* ═══════════════ il cursore ═══════════════
+   A riposo è un glifo che dice soltanto che cosa ha sotto: rombo sul vuoto,
+   barra sul testo (alta quanto la riga che sta toccando), croce sulla
+   fotografia. Sopra un legame si apre in un disco con il glifo dentro.
+   `difference` lo tiene leggibile su qualunque smalto. */
+#cursore {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 90;
+	display: none;
+	pointer-events: none;
+	mix-blend-mode: difference;
+	transform: translate(-50%, -50%);
+}
+
+body.cursore-attivo #cursore {
+	display: block;
+}
+
+body.cursore-attivo,
+body.cursore-attivo a {
+	cursor: none;
+}
+
+#cursore .forma {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transition:
+		width 0.34s var(--molla),
+		height 0.34s var(--molla),
+		opacity 0.2s,
+		transform 0.34s var(--molla);
+}
+
+/* — il glifo — */
+#glifo {
+	width: 11px;
+	height: 11px;
+	transform: translate(-50%, -50%) rotate(45deg);
+}
+
+#glifo i {
+	position: absolute;
+	inset: 0;
+	background: #fff;
+	transition:
+		width 0.34s var(--molla),
+		height 0.34s var(--molla),
+		opacity 0.2s,
+		transform 0.34s var(--molla);
+}
+
+#glifo i:last-child {
+	opacity: 0;
+	transform: rotate(90deg) scaleY(0.2);
+}
+
+/* sul testo: una barra verticale alta quanto la riga sottostante */
+body.su-testo #glifo {
+	width: 2px;
+	/* --altezza-testo la scrive il cursore leggendo la riga che tocca */
+	height: var(--altezza-testo, 24px);
+	transform: translate(-50%, -50%) rotate(0deg);
+}
+
+/* sulla fotografia: la barra resta, e una seconda le entra perpendicolare */
+body.su-foto #glifo {
+	width: 2px;
+	height: 24px;
+	transform: translate(-50%, -50%) rotate(45deg);
+}
+
+body.su-foto #glifo i:last-child {
+	opacity: 1;
+	transform: rotate(90deg) scaleY(1);
+}
+
+/* — sopra un legame: il glifo si ritira, il disco si apre — */
+body.tocca #glifo {
+	opacity: 0;
+	transform: translate(-50%, -50%) scale(0.3);
+}
+
+#disco {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 72px;
+	height: 72px;
+	border-radius: 50%;
+	background: #fff;
+	opacity: 0;
+	transform: translate(-50%, -50%) scale(0.4);
+}
+
+body.tocca #disco {
+	opacity: 1;
+	transform: translate(-50%, -50%) scale(1);
+}
+
+#disco span {
+	font-size: 1.7rem;
+	line-height: 1;
+	color: #000;
+}
+
+/* ═══════════════ le transizioni ═══════════════ */
+::view-transition {
+	/* l'overlay non deve mangiare i clic mentre la transizione corre */
+	pointer-events: none;
+}
+
+::view-transition-group(margine) {
+	animation-duration: 0.8s;
+	animation-timing-function: cubic-bezier(0.66, 0, 0.2, 1);
+	z-index: 100;
+}
+
+::view-transition-group(.morph),
+::view-transition-group(.titolo-morph) {
+	animation-duration: 0.85s;
+	animation-timing-function: cubic-bezier(0.62, 0, 0.12, 1);
+}
+
+/* La vecchia scritta sparisce subito: resta la scalata, non due scritte
+   sovrapposte che si dissolvono l'una nell'altra. */
+::view-transition-old(.titolo-morph) {
+	animation-duration: 0.18s;
+}
+
+::view-transition-new(.titolo-morph) {
+	animation-duration: 0.3s;
+	animation-delay: 0.1s;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: 0.5s;
+}
+
+/* Da una stanza a quella dopo non c'è nulla da far crescere: i nomi sono
+   diversi, quindi nessuna coppia si forma. Senza una classe di entrata e di
+   uscita React non avvierebbe alcuna transizione e il passaggio sarebbe un
+   taglio secco; con questa è una dissolvenza, che è anche il significato
+   giusto — stesso posto, contenuto diverso. Quando invece la coppia si
+   forma, `share` ha la precedenza e questa non entra in gioco. */
+::view-transition-old(.pagina) {
+	animation: 0.3s ease both sp-dissolvi reverse;
+}
+
+::view-transition-new(.pagina) {
+	animation: 0.35s ease 0.12s both sp-dissolvi;
+}
+
+@keyframes sp-dissolvi {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+/* ═══════════════ sotto gli 880px ═══════════════
+   Niente colonna, niente cursore: il margine è sempre in basso e le
+   impaginazioni delle soglie collassano su una sola, a piena larghezza. */
+@media (max-width: 880px) {
+	:root {
+		--rail: 0px;
+	}
+
+	body {
+		font-size: 17px;
+	}
+
+	#margine,
+	#margine.barra {
+		inset: auto 0 0 0;
+		width: auto;
+		height: 3.4rem;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.8rem;
+		padding: 0 1.1rem;
+		border-right: 0;
+		border-top: var(--peso) solid var(--ink);
+	}
+
+	#margine .marchio,
+	#margine.barra .marchio {
+		writing-mode: horizontal-tb;
+		transform: none;
+		align-self: center;
+		font-size: 1.05rem;
+		line-height: 1;
+	}
+
+	#margine .indice {
 		display: none;
+	}
+
+	/* In una stanza il marchio cede il posto alle due frecce: la freccia
+	   indietro è già il legame verso casa. */
+	#margine.barra .marchio {
+		display: none;
+	}
+
+	#margine.barra .coda {
+		gap: 1.1rem;
+		flex: 1 1 auto;
+		justify-content: space-between;
+		min-width: 0;
+	}
+
+	#margine .coda a {
+		/* bersaglio da dito */
+		padding: 0.7rem 0;
+	}
+
+	#margine .coda .avanti {
+		font-size: 0.98rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.lingua {
+		align-self: center;
+		padding: 0.55rem 0;
+		flex: 0 0 auto;
+	}
+
+	main {
+		padding-left: 0;
+		padding-bottom: 3.4rem;
+	}
+
+	body.cursore-attivo #cursore {
+		display: none;
+	}
+
+	body.cursore-attivo,
+	body.cursore-attivo a {
+		cursor: auto;
+	}
+
+	.apertura {
+		padding: 3.4rem 1.2rem 2rem;
+	}
+
+	.soglia {
+		padding: 2.4rem 1.2rem 1.2rem;
+	}
+
+	.soglia figure {
+		width: 100%;
+		height: 56vh;
+		margin: 0;
+	}
+
+	.soglia .titolo {
+		margin-top: -2.4rem;
+		text-align: left;
+	}
+
+	.soglia .riga {
+		margin: 1.2rem 0 0;
+		text-align: left;
+	}
+
+	.st-testa {
+		padding: 2.4rem 1.2rem 0;
+	}
+
+	.st-testa .riga2 {
+		grid-template-columns: 1fr;
+		gap: 1rem;
+	}
+
+	.st-eroe {
+		margin: 1.6rem 1.2rem 0;
+		height: 56vh;
+	}
+
+	.blocco,
+	.incontri {
+		grid-template-columns: 1fr;
+		gap: 0.8rem;
+		padding: 2rem 1.2rem 0;
+	}
+
+	.blocco > div p:first-child {
+		font-size: 1.28rem;
+	}
+
+	.incontri {
+		padding-bottom: 2.4rem;
+	}
+
+	.gruppo {
+		padding: 2rem 1.2rem 0;
+	}
+
+	.gruppo.due .scatti {
+		grid-template-columns: 1fr;
+	}
+
+	.gruppo.due .scatti .pz:nth-child(2) {
+		margin-top: 0;
+	}
+
+	.gruppo .pz figure,
+	.gruppo.uno .pz figure {
+		height: 56vh;
+	}
+
+	/* Il nome del pezzo può andare a capo invece di spingere fuori il prezzo. */
+	.voce .nome {
+		flex: 0 1 auto;
+	}
+}
+
+/* ═══════════════ movimento ridotto ═══════════════ */
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+
+	body,
+	#margine {
+		transition: none;
+	}
+
+	body.cursore-attivo #cursore {
+		display: none;
+	}
+
+	body.cursore-attivo,
+	body.cursore-attivo a {
+		cursor: auto;
+	}
+
+	::view-transition-group(*),
+	::view-transition-old(*),
+	::view-transition-new(*) {
+		animation-duration: 0s !important;
+		animation-delay: 0s !important;
 	}
 }

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Pagina } from "@/components/Pagina";
-import { dizionari } from "@/content/dizionario";
+import { Casa } from "@/components/Casa";
+import { voci } from "@/content/collezioni";
 import { sito } from "@/content/sito";
 
 export const metadata: Metadata = {
-	title: sito.nome,
-	description: dizionari.en.descrizioneMeta,
+	title: `${sito.nome} — handmade ceramics from Bergamo`,
+	description: voci.descrizione.en,
 	alternates: {
 		canonical: `${sito.url}/en`,
 		languages: { it: sito.url, en: `${sito.url}/en` },
@@ -14,27 +14,13 @@ export const metadata: Metadata = {
 		type: "website",
 		siteName: sito.nome,
 		title: sito.nome,
-		description: dizionari.en.descrizioneMeta,
+		description: voci.descrizione.en,
 		url: `${sito.url}/en`,
 		locale: "en_GB",
 		alternateLocale: ["it_IT"],
-		images: [
-			{
-				url: "/foto/og.jpg",
-				width: 1200,
-				height: 630,
-				alt: "The potter's hands at the wheel, shaping a piece",
-			},
-		],
-	},
-	twitter: {
-		card: "summary_large_image",
-		title: sito.nome,
-		description: dizionari.en.descrizioneMeta,
-		images: ["/foto/og.jpg"],
 	},
 };
 
 export default function HomeEn() {
-	return <Pagina locale="en" />;
+	return <Casa lingua="en" />;
 }

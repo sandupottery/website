@@ -1,6 +1,10 @@
 {
 	"$schema": "https://biomejs.dev/schemas/2.5.10/schema.json",
-	"vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
 	"files": {
 		"ignoreUnknown": false,
 		"includes": [
@@ -16,15 +20,63 @@
 			"!CHANGELOG.md"
 		]
 	},
-	"formatter": { "enabled": true, "indentStyle": "tab", "lineWidth": 100 },
-	"linter": { "enabled": true, "rules": { "preset": "recommended" } },
-	"javascript": { "formatter": { "quoteStyle": "double", "semicolons": "always" } },
-	"css": { "parser": { "cssModules": false, "tailwindDirectives": true } },
-	"assist": { "enabled": true, "actions": { "source": { "organizeImports": "on" } } },
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"lineWidth": 100
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"preset": "recommended"
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double",
+			"semicolons": "always"
+		}
+	},
+	"css": {
+		"parser": {
+			"cssModules": false,
+			"tailwindDirectives": true
+		}
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	},
 	"overrides": [
 		{
-			"includes": ["src/components/ScriptFreschezza.tsx", "src/components/Pagina.tsx"],
-			"linter": { "rules": { "security": { "noDangerouslySetInnerHtml": "off" } } }
+			"includes": ["src/app/globals.css"],
+			"linter": {
+				"rules": {
+					"complexity": {
+						"noImportantStyles": "off"
+					},
+					"style": {
+						"noDescendingSpecificity": "off"
+					},
+					"correctness": {
+						"noUnknownTypeSelector": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/components/Casa.tsx", "src/components/Stanza.tsx"],
+			"linter": {
+				"rules": {
+					"performance": {
+						"noImgElement": "off"
+					}
+				}
+			}
 		}
 	]
 }

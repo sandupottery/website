@@ -10,16 +10,19 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Project Context
 
-Temporary "lavori in corso" site for Sandu Pottery, an artisan potter in Bergamo, Italy. It replaces a cancelled Shopify store. Its job: show her work, list her craft-market dates, and give people a way to write. No shop, no cart, no shipping.
+The permanent showcase site for Sandu Pottery, an artisan potter in Bergamo, Italy. It replaces a cancelled Shopify store and, in time, the temporary "lavori in corso" site that still lives on `main` and serves the apex domain. No shop, no cart, no shipping.
 
-The permanent showcase site is a separate, later project.
+**The design thesis, which every change should be measured against: the design is severe, the warmth is the content.** Hairline rules, huge quiet type, empty space, no ornament, no colour that did not come from one of her glazes. The warmth arrives through her photographs and her first-person voice. Trying to make the *design* warm ends at *carino*, which is the failure the client named first.
+
+Texts and photographs in `src/content/collezioni.ts` are working material: the client will rewrite the copy and reshoot most of the images. They are placed so she can see the shape, not because they are final.
 
 ## Architecture
 
-- Two routes: `/` (Italian) and `/en` (English), sharing `src/components/Pagina.tsx`
+- Twelve routes, all prerendered: `/` and `/en` (the home), plus `/<collezione>` and `/en/<collezione>` for the five rooms. Slugs are **not** translated, so the language toggle is one computed link — see `src/lib/percorsi.ts`.
 - `output: "export"` — fully static, no server, no middleware
-- One content model in `src/content/mercati.ts` feeds three consumers: the page, the `Event` JSON-LD, and the `.ics` files
-- Past dates are hidden by a parse-time inline script, **not** by React — see `src/components/ScriptFreschezza.tsx` for why
+- One content model in `src/content/collezioni.ts` feeds the home, the rooms, the sitemap and the per-page metadata
+- `src/content/mercati.ts` still feeds the `Event` JSON-LD and the `.ics` files; the market calendar page itself is **not yet rebuilt** in this design — it is the next piece of work
+- The home→room transition is the browser's View Transitions API through React's `<ViewTransition>`. **No animation library.** See "Rules that will bite you".
 
 ## Tech & Tooling
 
@@ -28,7 +31,8 @@ The permanent showcase site is a separate, later project.
 - Lefthook for git hooks; commitlint enforcing conventional commits
 - Tailwind CSS v4 via PostCSS, CSS-first `@theme` — there is no `tailwind.config.ts`
 - `bun test` for the pure functions in `src/lib/`
-- No Framer Motion. One CSS keyframe is the whole motion budget.
+- **No animation library, and none is needed.** Motion is the View Transitions API, CSS transitions, and one `requestAnimationFrame` loop for the scrolling background.
+- `src/app/globals.css` is hand-written CSS with named classes, not utilities. The home is five distinct compositions, not a grid; in utilities that becomes forty arbitrary values per element. Tailwind stays for the `@theme` tokens and for whatever comes next (the market calendar).
 
 ## Commands
 
@@ -43,16 +47,25 @@ The permanent showcase site is a separate, later project.
 
 ## Rules that will bite you
 
-- **`ScriptFreschezza.tsx` may touch only `element.style` — never an attribute, `textContent`, or a class.** It is a parse-time inline `<script>`, the last child of `<main>` in `Pagina.tsx`, that hides past market dates before first paint. React does not manage `element.style` unless a component passes a `style` prop, and none of the components it touches do — so writing to `.style` is invisible to React's reconciliation. Writing anything else (an attribute, text, a class) creates a mismatch between the server-rendered HTML and what React expects on hydration; React 19's answer to a hydration mismatch is to discard the server HTML for that subtree and re-render it from scratch client-side, which silently erases whatever the script had just done — the page flashes correct, then reverts to stale. Two rounds of debugging were spent finding this. Do not touch `ScriptFreschezza.tsx` or `Pagina.tsx`, and do not rename any `data-*` attribute it reads (`data-fine`, `data-inizio`, `data-elenco-date`, `data-gruppo-mese`, `data-nessuna-data`, `data-tutte-le-date`, `data-voce-prossimo`, `data-nessun-prossimo`, `data-etichetta-prossimo`, `data-etichetta-oggi`, `data-suggerimento`). The real position constraint: the script must render after all markup emitting the `data-*` attributes it queries, since it runs once during parsing and does not re-scan. **Any new component emitting `data-fine` or `data-voce-prossimo` must be placed above the script in the DOM** — currently last in `<main>` in `Pagina.tsx` — or its rows are silently unfiltered rather than erroring.
+- **React strips `view-transition-name` from any element that is off-screen at commit time.** `measureInstance().view` in `react-dom` checks the element against the viewport; if it fails, React removes the name and no pair forms, so a shared element silently cross-fades instead of morphing. This is why `src/components/Cima.tsx` scrolls the room to the top in a `useLayoutEffect` (which runs inside the commit, before React measures) and why `Scorrimento` honours `location.hash` the same way on the way back. **If a morph ever "stops working", check that both elements are on screen at commit time before suspecting anything else.**
+- **Navigating between two rooms does not start a view transition at all.** The route (`[collezione]`) does not change, so React commits an update rather than an enter/exit pair, and `startViewTransition` is never called — `enter`/`exit`/`update` props and a `key` on `<Stanza>` all fail to force it. That one passage is covered by a scoped CSS fade (`main.in-stanza.appena-entrata`), armed by `src/lib/provenienza.ts`. Do not "fix" this by adding a global page fade: it would fight the home→room morph, which is the site's most important movement.
+- **The room's background colour is server-rendered in a `<style>` tag, the home's is written to `--ground` inline by JavaScript.** They meet in one place: `Scorrimento` removes its inline declaration on unmount, because an inline custom property on `<html>` beats a stylesheet rule and the room would otherwise inherit the home's last scroll colour. Change one, re-check the other.
+- **`ViewTransition` is typed in `src/types/view-transition.d.ts`, not by `@types/react`.** Next.js bundles a React that exports it; the public types have not caught up. Delete that file once they do — leaving it will produce a duplicate-declaration error, which is the intended alarm.
+
+- **`ScriptFreschezza.tsx` and `Pagina.tsx` were deleted on this branch** together with the rest of the temporary site's components. They are still on `main`, which serves the live apex domain. When the market calendar is rebuilt in this design, read them there first: the parse-time inline script that hides past dates before first paint may touch **only** `element.style`, never an attribute, `textContent` or a class — anything else is a hydration mismatch and React 19 answers one by discarding the server HTML for that subtree, silently undoing the script. Two rounds of debugging went into finding that.
 - **`.ics` `DTEND` is exclusive; schema.org `endDate` is inclusive.** A market running 2026-09-19–20 gets `DTEND;VALUE=DATE:20260921` in the `.ics` (the day *after* the last day, per RFC 5545) but `endDate: "2026-09-20"` in the JSON-LD (the last day itself, per schema.org). They differ by one day **on purpose** — collapsing them to match would make one of the two wrong. `tests/ics.test.ts` ("scrive un evento di due giorni con DTEND al terzo giorno") and `tests/jsonld.test.ts` ("un evento lungo ha endDate all'ultimo giorno, non al giorno dopo") both pin this; if you ever see them disagree about what "the end date" should be, that is the asymmetry, not a bug.
 - **Never compute "today" with `toISOString()`.** If you need "today" in TypeScript, use `oggiRoma()` from `src/lib/date.ts`. `toISOString()` reports UTC, and Rome is UTC+1/+2 — between midnight and 1am (winter) or 2am (summer) local time, `toISOString()` still names the previous day, which would make the freshness script hide today's market as if it had already passed. Note that `ScriptFreschezza.tsx` itself does **not** call `oggiRoma()` — it deliberately duplicates the same Rome-timezone logic inline, in plain ES5, because it must run before any bundle (and therefore before `src/lib/date.ts`) loads. That duplication is intentional, not a missed import; keep both copies and their tests in sync if the Rome-timezone logic ever changes.
 - **The English date format is pinned to Bun's bundled ICU, and that pin is deliberate.** `Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long" })` yields `"Thursday 24 September"` under Bun's ICU and `"Thursday, 24 September"` (with a comma) under Node's full-ICU. `tests/date.test.ts` asserts the no-comma Bun form. If a Bun upgrade changes the bundled CLDR data, that test failing is the alarm working as designed, not a false positive — it means the live site's date labels just changed shape. Fix it by updating the expected string to match the new correct output, or by composing the label from `formatToParts` if the format starts churning across Bun versions. Never "fix" a failure here by loosening or deleting the assertion — that turns off the alarm instead of answering it.
 - **Bracketed placeholders (e.g. `[EMAIL DA CONFERMARE]`) are load-bearing.** They mark a fact the client has not yet supplied. Never invent a value to make one go away — leave the placeholder and note what is still needed. (None remain in this repo as of Task 12; every open fact was resolved. If you introduce new client-facing copy before all facts are in, use this convention rather than a guess.)
-- **Never use `terracotta` (`#C2603A`), `rosa` or `glassa` for text.** They fail WCAG AA. Links use `terracotta-scritta` (`#9A4526`). See `docs/brand.md`.
+- **The two inks are measured, and `--color-sp-tenue` (`#5C5247`) is the tight one.** It gives 4.51:1 on the worst of the five grounds (`--color-sp-animali`, `#DBC3AC`), which clears WCAG AA with nothing to spare. Lightening it, or darkening any ground, breaks contrast on pages nobody will think to re-check. Re-measure against **all five** grounds before touching either. The temp site's palette (`terracotta`, `rosa`, `glassa`) is documented in `docs/brand.md` and is not used here.
+
+## Changing the client's words or photographs
+
+Everything she can change lives in `src/content/collezioni.ts` — collection names, the one-line captions, the prose of each room, the piece names, the encounters. Photographs go in `public/opere/` and are referenced from the same file. Inline emphasis uses `*corsivo*` / `**rilievo**` / `\n`; see `src/lib/testo.tsx`. No HTML in the strings, so no `dangerouslySetInnerHTML`.
 
 ## Adding a market date
 
-See `docs/content-editing.md`. It is one edit to `src/content/mercati.ts` plus a push.
+See `docs/content-editing.md`. It is one edit to `src/content/mercati.ts` plus a push. (The page that displays them is not part of this design yet — the edit still feeds the `.ics` files and the JSON-LD.)
 
 ## Learned Patterns
 

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { dizionari } from "@/content/dizionario";
+import { voci } from "@/content/collezioni";
 import { sito } from "@/content/sito";
 
 export const dynamic = "force-static";
@@ -8,11 +8,11 @@ export default function manifest(): MetadataRoute.Manifest {
 	return {
 		name: sito.nome,
 		short_name: sito.nome,
-		description: dizionari.it.descrizioneMeta,
+		description: voci.descrizione.it,
 		start_url: "/",
 		display: "browser",
-		background_color: "#faf7f3",
-		theme_color: "#faf7f3",
+		background_color: "#F5F2EB",
+		theme_color: "#F5F2EB",
 		lang: "it",
 		icons: [{ src: "/icon.png", sizes: "512x512", type: "image/png" }],
 	};
