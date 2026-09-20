@@ -15,10 +15,20 @@
 export type Lingua = "it" | "en";
 export type Testo = Record<Lingua, string>;
 
+/**
+ * `fuoco` è l'`object-position` del ritaglio, e si mette solo quando serve.
+ * Le fotografie dell'archivio sono quasi tutte verticali mentre alcune
+ * cornici del disegno sono orizzontali: il ritaglio centrale a volte taglia
+ * via il soggetto. Con questo si sposta il fuoco senza toccare il CSS —
+ * utile soprattutto quando la cliente sostituirà le immagini.
+ */
+export type Foto = { foto: string; alt: Testo; fuoco?: string };
+
 export type Pezzo = {
 	foto: string;
 	nome: Testo;
 	anno: string;
+	fuoco?: string;
 };
 
 export type Blocco =
@@ -39,8 +49,8 @@ export type Collezione = {
 	guida: Testo;
 	/** Il fondo verso cui la home sfuma mentre si scorre questa soglia. */
 	fondo: string;
-	soglia: { foto: string; alt: Testo };
-	eroe: { foto: string; alt: Testo };
+	soglia: Foto;
+	eroe: Foto;
 	blocchi: Blocco[];
 	incontri?: Incontro[];
 };
@@ -63,17 +73,17 @@ export const collezioni: readonly Collezione[] = [
 		},
 		fondo: "#DCE3DD",
 		soglia: {
-			foto: "/opere/tettazza-margherita.jpg",
+			foto: "/opere/tettazze-scalogno.jpg",
 			alt: {
-				it: "Una tazza con il seno modellato sopra, decorata a margherite",
-				en: "A cup with a breast modelled on it, decorated with daisies",
+				it: "Un boccale smaltato di verde, con il seno modellato sopra, accanto a uno scalogno",
+				en: "A green-glazed mug with a breast modelled on it, beside a shallot",
 			},
 		},
 		eroe: {
-			foto: "/opere/tettazza-papaveri.jpg",
+			foto: "/opere/tettazze-margherite.jpg",
 			alt: {
-				it: "Una tazza decorata a papaveri rossi",
-				en: "A cup decorated with red poppies",
+				it: "Due tazze bianche affiancate, con due margherite posate davanti",
+				en: "Two white cups side by side, with two daisies laid in front of them",
 			},
 		},
 		blocchi: [
@@ -99,13 +109,13 @@ export const collezioni: readonly Collezione[] = [
 				tipo: "pezzi",
 				pezzi: [
 					{
-						foto: "/opere/tettazza-margherita.jpg",
-						nome: { it: "Boccale", en: "Mug" },
+						foto: "/opere/tettazze-scalogno.jpg",
+						nome: { it: "Boccale, smalto verde", en: "Mug, green glaze" },
 						anno: "2023",
 					},
 					{
-						foto: "/opere/t-d.jpg",
-						nome: { it: "Tazzina fiore", en: "Flower cup" },
+						foto: "/opere/tettazze-smalti.jpg",
+						nome: { it: "Tazzine, smalti diversi", en: "Small cups, assorted glazes" },
 						anno: "2024",
 					},
 				],
@@ -128,8 +138,8 @@ export const collezioni: readonly Collezione[] = [
 				tipo: "pezzi",
 				pezzi: [
 					{
-						foto: "/opere/t-c.jpg",
-						nome: { it: "Portacandela", en: "Candle holder" },
+						foto: "/opere/tettazze-portacandela.jpg",
+						nome: { it: "Portacandela", en: "Candle holders" },
 						anno: "2023",
 					},
 				],
@@ -156,13 +166,13 @@ export const collezioni: readonly Collezione[] = [
 				tipo: "pezzi",
 				pezzi: [
 					{
-						foto: "/opere/t-a.jpg",
+						foto: "/opere/tettazze-fiore.jpg",
 						nome: { it: "Tazza fiore", en: "Flower cup" },
 						anno: "2024",
 					},
 					{
-						foto: "/opere/t-b.jpg",
-						nome: { it: "Tazzine cuore", en: "Heart cups" },
+						foto: "/opere/tettazze-fiori-campo.jpg",
+						nome: { it: "Boccale, fiori di campo", en: "Mug, wild flowers" },
 						anno: "2024",
 					},
 				],
@@ -207,17 +217,17 @@ export const collezioni: readonly Collezione[] = [
 		},
 		fondo: "#C9CFBE",
 		soglia: {
-			foto: "/opere/foglie.jpg",
+			foto: "/opere/foglie-fragole.jpg",
 			alt: {
-				it: "Tazze con l'impronta di una foglia, smaltate di verde",
-				en: "Cups bearing the imprint of a leaf, glazed green",
+				it: "Una tazza con l'impronta di foglie di fragola, accanto a due fragole",
+				en: "A cup bearing the imprint of strawberry leaves, beside two strawberries",
 			},
 		},
 		eroe: {
-			foto: "/opere/f-a.jpg",
+			foto: "/opere/foglie-dettaglio.jpg",
 			alt: {
-				it: "Il dettaglio di una foglia impressa nell'argilla",
-				en: "Close-up of a leaf pressed into the clay",
+				it: "Il dettaglio ravvicinato di una foglia impressa e smaltata di verde",
+				en: "Close-up of a leaf pressed into the clay and glazed green",
 			},
 		},
 		blocchi: [
@@ -243,13 +253,13 @@ export const collezioni: readonly Collezione[] = [
 				tipo: "pezzi",
 				pezzi: [
 					{
-						foto: "/opere/foglie.jpg",
+						foto: "/opere/foglie-gruppo.jpg",
 						nome: { it: "Tazze foglia", en: "Leaf cups" },
 						anno: "2023",
 					},
 					{
-						foto: "/opere/f-b.jpg",
-						nome: { it: "Zuccheriere", en: "Sugar bowls" },
+						foto: "/opere/foglie-coppia.jpg",
+						nome: { it: "Boccali, impronta di malva", en: "Mugs, mallow imprint" },
 						anno: "2023",
 					},
 				],
@@ -272,8 +282,13 @@ export const collezioni: readonly Collezione[] = [
 				tipo: "pezzi",
 				pezzi: [
 					{
-						foto: "/opere/tettazza-radicchio.jpg",
-						nome: { it: "Tazza, smalto verde", en: "Cup, green glaze" },
+						foto: "/opere/foglie-menta.jpg",
+						nome: { it: "Boccale, impronta di menta", en: "Mug, mint imprint" },
+						anno: "2024",
+					},
+					{
+						foto: "/opere/foglie-terra.jpg",
+						nome: { it: "Boccale, fra la malva", en: "Mug, among the mallow" },
 						anno: "2024",
 					},
 				],
@@ -295,17 +310,18 @@ export const collezioni: readonly Collezione[] = [
 		},
 		fondo: "#DBC3AC",
 		soglia: {
-			foto: "/opere/procione.jpg",
+			foto: "/opere/animali-api.jpg",
+			fuoco: "center 26%",
 			alt: {
-				it: "Una tazza a forma di procione",
-				en: "A raccoon-shaped cup",
+				it: "Due tazze a forma di ape, impilate su un fondo verde",
+				en: "Two bee-shaped cups, stacked against a green background",
 			},
 		},
 		eroe: {
-			foto: "/opere/a-a.jpg",
+			foto: "/opere/animali-galline.jpg",
 			alt: {
-				it: "Tazze a forma di animale allineate su un piano",
-				en: "Animal-shaped cups lined up on a surface",
+				it: "Una fila di tazze a forma di gallina, in attesa sulla mensola",
+				en: "A row of hen-shaped cups, waiting on the shelf",
 			},
 		},
 		blocchi: [
@@ -331,12 +347,12 @@ export const collezioni: readonly Collezione[] = [
 				tipo: "pezzi",
 				pezzi: [
 					{
-						foto: "/opere/procione.jpg",
-						nome: { it: "Tazza procione", en: "Raccoon cup" },
+						foto: "/opere/animali-orso.jpg",
+						nome: { it: "Tazza orso polare", en: "Polar bear cup" },
 						anno: "2024",
 					},
 					{
-						foto: "/opere/a-b.jpg",
+						foto: "/opere/animali-gatte.jpg",
 						nome: { it: "Gattetazze", en: "Cat-cups" },
 						anno: "2024",
 					},
@@ -360,8 +376,8 @@ export const collezioni: readonly Collezione[] = [
 				tipo: "pezzi",
 				pezzi: [
 					{
-						foto: "/opere/pulcini.jpg",
-						nome: { it: "Pulcini", en: "Chicks" },
+						foto: "/opere/animali-pulcini.jpg",
+						nome: { it: "Galline e pulcini", en: "Hens and chicks" },
 						anno: "2024",
 					},
 				],
@@ -383,17 +399,17 @@ export const collezioni: readonly Collezione[] = [
 		},
 		fondo: "#C3D0CD",
 		soglia: {
-			foto: "/opere/gioielli.jpg",
+			foto: "/opere/ciondoli-verde.jpg",
 			alt: {
-				it: "Ciondoli e orecchini in ceramica smaltata",
-				en: "Glazed ceramic pendants and earrings",
+				it: "Un pendente a trischele e due orecchini, smalto verde, su un tronco",
+				en: "A triskelion pendant and two earrings, green glaze, on a tree stump",
 			},
 		},
 		eroe: {
-			foto: "/opere/g-b.jpg",
+			foto: "/opere/ciondoli-blu.jpg",
 			alt: {
-				it: "Orecchini in ceramica, dal vicino",
-				en: "Ceramic earrings, close up",
+				it: "Pendente e orecchini smaltati di blu profondo",
+				en: "Pendant and earrings in a deep blue glaze",
 			},
 		},
 		blocchi: [
@@ -415,7 +431,7 @@ export const collezioni: readonly Collezione[] = [
 				tipo: "pezzi",
 				pezzi: [
 					{
-						foto: "/opere/gioielli.jpg",
+						foto: "/opere/ciondoli-turchese.jpg",
 						nome: {
 							it: "Trischele, pendente e orecchini",
 							en: "Triskelion, pendant and earrings",
@@ -423,8 +439,8 @@ export const collezioni: readonly Collezione[] = [
 						anno: "2024",
 					},
 					{
-						foto: "/opere/gioielli2.jpg",
-						nome: { it: "Anelli e orecchini", en: "Rings and earrings" },
+						foto: "/opere/ciondoli-lilla.jpg",
+						nome: { it: "Orecchini, smalto lilla", en: "Earrings, lilac glaze" },
 						anno: "2024",
 					},
 				],
@@ -433,11 +449,16 @@ export const collezioni: readonly Collezione[] = [
 				tipo: "pezzi",
 				pezzi: [
 					{
-						foto: "/opere/g-a.jpg",
+						foto: "/opere/ciondoli-foglia.jpg",
 						nome: {
-							it: "Orecchini, smalto turchese",
-							en: "Earrings, turquoise glaze",
+							it: "Pendente e orecchini foglia",
+							en: "Leaf pendant and earrings",
 						},
+						anno: "2024",
+					},
+					{
+						foto: "/opere/ciondoli-cuori.jpg",
+						nome: { it: "Cuori e orecchini", en: "Hearts and earrings" },
 						anno: "2024",
 					},
 				],
@@ -459,17 +480,17 @@ export const collezioni: readonly Collezione[] = [
 		},
 		fondo: "#F5F2EB",
 		soglia: {
-			foto: "/opere/t-g.jpg",
+			foto: "/opere/atelier-banco.jpg",
 			alt: {
-				it: "Pezzi appena smaltati, in attesa della cottura",
-				en: "Freshly glazed pieces, waiting to be fired",
+				it: "Un boccale sul banco di lavoro, fra i pennelli e la carta di giornale",
+				en: "A mug on the workbench, among the brushes and the newspaper",
 			},
 		},
 		eroe: {
-			foto: "/opere/candeliere.jpg",
+			foto: "/opere/atelier-asciugatura.jpg",
 			alt: {
-				it: "Un candeliere in ceramica sul piano di lavoro",
-				en: "A ceramic candle holder on the workbench",
+				it: "Pezzi appena decorati, allineati sul tavolo ad asciugare",
+				en: "Freshly decorated pieces, lined up on the table to dry",
 			},
 		},
 		blocchi: [
@@ -503,13 +524,13 @@ export const collezioni: readonly Collezione[] = [
 				tipo: "pezzi",
 				pezzi: [
 					{
-						foto: "/opere/t-f.jpg",
-						nome: { it: "Al banco", en: "At the stall" },
+						foto: "/opere/atelier-mercatino.jpg",
+						nome: { it: "Al banco, in piazza", en: "At the stall, in the square" },
 						anno: "2024",
 					},
 					{
-						foto: "/opere/t-e.jpg",
-						nome: { it: "In attesa della cottura", en: "Waiting to be fired" },
+						foto: "/opere/atelier-vasi.jpg",
+						nome: { it: "Vasi, sul davanzale", en: "Planters, on the windowsill" },
 						anno: "2024",
 					},
 				],

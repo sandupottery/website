@@ -59,6 +59,7 @@ export function Casa({ lingua }: { lingua: Lingua }) {
 									<img
 										src={c.soglia.foto}
 										alt={c.soglia.alt[lingua]}
+										style={{ objectPosition: c.soglia.fuoco }}
 										loading={i === 0 ? "eager" : "lazy"}
 										decoding="async"
 									/>

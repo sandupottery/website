@@ -13,7 +13,13 @@ function Pezzi({ blocco, lingua }: { blocco: Blocco; lingua: Lingua }) {
 				{blocco.pezzi.map((p) => (
 					<div className="pz" key={p.foto + p.nome.it}>
 						<figure>
-							<img src={p.foto} alt={p.nome[lingua]} loading="lazy" decoding="async" />
+							<img
+								src={p.foto}
+								alt={p.nome[lingua]}
+								style={{ objectPosition: p.fuoco }}
+								loading="lazy"
+								decoding="async"
+							/>
 						</figure>
 						{/* La didascalia da catalogo: nome, filetto, prezzo. Una riga
 						    sola, perché è così che si legge un catalogo d'arte. */}
@@ -78,7 +84,12 @@ export function Stanza({ collezione, lingua }: { collezione: Collezione; lingua:
 					default="none"
 				>
 					<figure className="st-eroe">
-						<img src={c.eroe.foto} alt={c.eroe.alt[lingua]} decoding="async" />
+						<img
+							src={c.eroe.foto}
+							alt={c.eroe.alt[lingua]}
+							style={{ objectPosition: c.eroe.fuoco }}
+							decoding="async"
+						/>
 					</figure>
 				</ViewTransition>
 
