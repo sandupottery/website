@@ -564,6 +564,59 @@ main.in-stanza {
 	height: 9vh;
 }
 
+/* ═══════════════ il piede ═══════════════
+   I margini, e non un riempimento, portano il contenuto oltre la colonna del
+   margine: il filetto deve cominciare dove comincia il testo della pagina, e
+   un bordo comprende sempre il riempimento del suo elemento. */
+#piede {
+	margin: 0 3rem 0 calc(var(--rail) + 3rem);
+	padding: 1.9rem 0 3.6rem;
+	border-top: var(--peso) solid var(--ink);
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	gap: 1.8rem 3.5rem;
+	font-size: 0.92rem;
+	color: var(--tenue);
+}
+
+#piede .colonna {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.32rem;
+}
+
+#piede p {
+	margin: 0;
+}
+
+#piede .insegna {
+	font-size: 1.12rem;
+	color: var(--ink);
+}
+
+#piede .occhiello {
+	margin-bottom: 0.5rem;
+}
+
+#piede a {
+	border-bottom: 1px solid color-mix(in srgb, var(--tenue) 45%, transparent);
+	padding-bottom: 0.06em;
+	transition:
+		color 0.3s,
+		border-color 0.3s;
+}
+
+#piede a:hover {
+	color: var(--ink);
+	border-bottom-color: var(--ink);
+}
+
+#piede .firma {
+	align-self: flex-end;
+}
+
 /* ═══════════════ la stanza ═══════════════ */
 .st-testa {
 	padding: 4.2rem 3rem 0;
@@ -1208,6 +1261,19 @@ body.tocca #disco {
 	main {
 		padding-left: 0;
 		padding-bottom: 3.4rem;
+	}
+
+	/* Il piede sta fuori da `main`, quindi il riempimento che tiene il
+	   contenuto sopra la barra fissa non lo protegge: se lo tiene da sé. */
+	#piede {
+		margin: 0 1.2rem;
+		padding-bottom: 5rem;
+		flex-direction: column;
+		gap: 1.7rem;
+	}
+
+	#piede .firma {
+		align-self: flex-start;
 	}
 
 	body.cursore-attivo #cursore {

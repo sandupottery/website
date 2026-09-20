@@ -7,6 +7,7 @@ import { righe } from "@/lib/testo";
 import { Dati } from "./Dati";
 import { Immagine } from "./Immagine";
 import { Margine } from "./Margine";
+import { Piede } from "./Piede";
 import { Scorrimento } from "./Scorrimento";
 
 /** Il fondo di partenza: la carta. Lo stesso valore di `--color-sp-carta`. */
@@ -110,6 +111,8 @@ export function Casa({ lingua }: { lingua: Lingua }) {
 					</Fragment>
 				))}
 			</main>
+
+			<Piede lingua={lingua} />
 
 			<Scorrimento />
 		</>
