@@ -1,0 +1,113 @@
+# Pubblica il sito definitivo su anteprima.sandupottery.com.
+#
+# Esiste separato dal rilascio perché il sito temporaneo, che sta su `main` e
+# serve il dominio principale, deve restare in piedi per tutto il tempo in cui
+# questo viene rifinito con la cliente. Due progetti Pages distinti, due
+# domini distinti, nessun punto in cui l'uno possa sostituire l'altro per
+# sbaglio.
+#
+# L'anteprima non va nei motori di ricerca: `robots.txt` e `_headers` qui
+# sotto sovrascrivono quelli generati dalla build. Lo fa il flusso e non il
+# codice, così la stessa build che finirà in produzione non porta con sé un
+# noindex dimenticato.
+#
+# Quando questa diventerà la versione buona, il lavoro è: puntare il progetto
+# Pages di produzione a questo ramo e togliere questo file.
+
+name: Anteprima
+
+on:
+    push:
+        branches: [feat/sito-definitivo]
+    workflow_dispatch:
+
+concurrency:
+    group: anteprima
+    cancel-in-progress: true
+
+env:
+    PROGETTO: sandupottery-anteprima
+    DOMINIO: anteprima.sandupottery.com
+
+jobs:
+    ci:
+        uses: ./.github/workflows/ci.yml
+
+    pubblica:
+        needs: ci
+        runs-on: ubuntu-latest
+        steps:
+            - name: Download build artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: static-site
+                  path: out/
+
+            - name: Tieni l'anteprima fuori dai motori di ricerca
+              run: |
+                  printf 'User-agent: *\nDisallow: /\n' > out/robots.txt
+                  printf '/*\n  X-Robots-Tag: noindex, nofollow\n' > out/_headers
+                  cat out/robots.txt out/_headers
+
+            # wrangler non crea il progetto da solo: al primo giro fallirebbe
+            # con "Project not found". Questo passo lo crea e viene ignorato
+            # quando esiste già.
+            - name: Assicura che il progetto Pages esista
+              uses: cloudflare/wrangler-action@v3
+              continue-on-error: true
+              with:
+                  apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+                  command: pages project create ${{ env.PROGETTO }} --production-branch main
+
+            # `--branch=main` serve: senza, wrangler deduce il ramo dal
+            # contesto (qui `feat/sito-definitivo`) e pubblica su un URL di
+            # anteprima invece che sulla produzione di QUESTO progetto, che è
+            # quella a cui è attaccato il dominio.
+            - name: Pubblica su Cloudflare Pages
+              uses: cloudflare/wrangler-action@v3
+              with:
+                  apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+                  command: pages deploy out --project-name=${{ env.PROGETTO }} --branch=main
+
+            - name: Collega il sottodominio
+              env:
+                  CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+              run: |
+                  set -u
+                  RISPOSTA=$(curl -sS -X POST \
+                    "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT/pages/projects/$PROGETTO/domains" \
+                    -H "Authorization: Bearer $CF_TOKEN" \
+                    -H "Content-Type: application/json" \
+                    --data "{\"name\":\"$DOMINIO\"}")
+                  echo "$RISPOSTA" | python3 -c "
+                  import sys, json
+                  d = json.load(sys.stdin)
+                  if d.get('success'):
+                      r = d.get('result') or {}
+                      print('   collegato:', r.get('name'), '- stato:', r.get('status'))
+                  else:
+                      errori = d.get('errors', [])
+                      messaggi = [e.get('message', '') for e in errori]
+                      # 8000013 = già collegato: va bene così
+                      if any('already' in m.lower() for m in messaggi) or any(str(e.get('code', '')) == '8000013' for e in errori):
+                          print('   già collegato, niente da fare')
+                      else:
+                          print('   ERRORE:', messaggi); sys.exit(1)
+                  "
+
+            - name: Elenca i domini del progetto
+              env:
+                  CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+              run: |
+                  curl -sS "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT/pages/projects/$PROGETTO/domains" \
+                    -H "Authorization: Bearer $CF_TOKEN" \
+                  | python3 -c "
+                  import sys, json
+                  d = json.load(sys.stdin)
+                  for x in d.get('result', []):
+                      print(f\"  {x.get('name'):<32} {x.get('status')}\")
+                  "
