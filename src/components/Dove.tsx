@@ -6,9 +6,22 @@ import type { Locale } from "@/lib/date";
 import { giorniBrevi, raggruppaPerMese, ultimoGiorno } from "@/lib/date";
 
 /**
- * Le date dei mercatini, nello stesso segno del catalogo dei pezzi: un nome,
- * un filetto, e all'altro capo il dato. È la stessa riga che altrove porta il
- * prezzo — qui porta un luogo o una regola.
+ * Le date dei mercatini.
+ *
+ * La riga è quella del catalogo dei pezzi — un nome, un filetto, e all'altro
+ * capo il dato — ma pesata al contrario: lì il nome del pezzo è la voce e il
+ * prezzo è la postilla, qui la data e il luogo sono *l'unica* cosa che
+ * qualcuno è venuto a leggere. Il filetto quindi si assottiglia e i due capi
+ * si scuriscono; con il segno pieno del catalogo la riga più leggibile era la
+ * linea che divide le due che contano.
+ *
+ * Il mese sta in verticale accanto al suo gruppo, come il marchio nel margine:
+ * un numero in colonna non si legge come una data finché non si risale al mese
+ * scritto sopra, e un filetto che abbraccia il gruppo dice a colpo d'occhio
+ * quali giorni appartengono a quale mese.
+ *
+ * Una regola sola per i legami, in tutte e due le liste: **il dove apre la
+ * mappa, il quando va nel calendario.**
  *
  * I `data-*` non sono decorazione: li legge `ScriptFreschezza`.
  */
@@ -22,10 +35,16 @@ export function Mercati({ locale }: { locale: Locale }) {
 				<p className="occhiello">{d.ogniMeseSempre}</p>
 				<div>
 					{ricorrenze.map((r) => (
-						<p className="voce" key={r.luogo}>
-							<span className="nome">{r.luogo}</span>
+						<p className="voce" key={r.id}>
+							<a className="nome" href={r.mappa} target="_blank" rel="noreferrer">
+								{r.luogo}
+							</a>
 							<span className="tratto" aria-hidden="true" />
-							<span className="dato">{locale === "it" ? r.regolaIt : r.regolaEn}</span>
+							{/* Una regola salvata una volta vale per tutti i mesi che
+							    verranno: il .ics porta una RRULE, non una data. */}
+							<a className="dato" href={`/calendario/${r.id}.ics`}>
+								{locale === "it" ? r.regolaIt : r.regolaEn}
+							</a>
 						</p>
 					))}
 					<p className="nota">{d.ogniMeseNota}</p>
@@ -46,7 +65,7 @@ export function Mercati({ locale }: { locale: Locale }) {
 								{g.voci.map((m) => (
 									<li className="voce" data-fine={ultimoGiorno(m)} key={m.id}>
 										<a className="nome" href={`/calendario/${m.id}.ics`}>
-											{giorniBrevi(m)}
+											{giorniBrevi(m, locale)}
 										</a>
 										<span className="tratto" aria-hidden="true" />
 										<a className="dato" href={m.mappa} target="_blank" rel="noreferrer">

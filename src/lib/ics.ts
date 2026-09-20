@@ -11,6 +11,8 @@ export type EventoICS = {
 	titolo: string;
 	luogo: string;
 	url: string;
+	/** RFC 5545 §3.8.5.3, senza il prefisso: i mercatini che tornano ogni mese. */
+	regola?: string;
 };
 
 const DOMINIO = "sandupottery.com";
@@ -73,6 +75,11 @@ export function creaICS(
 			`DTSTAMP:${dtstamp}`,
 			`DTSTART;VALUE=DATE:${data(e.inizio)}`,
 			`DTEND;VALUE=DATE:${data(giornoDopo(e.fine ?? e.inizio))}`,
+		);
+
+		if (e.regola) righe.push(`RRULE:${e.regola}`);
+
+		righe.push(
 			`SUMMARY:${escapeTesto(e.titolo)}`,
 			`LOCATION:${escapeTesto(e.luogo)}`,
 			// URL è di tipo URI (RFC 5545 §3.3.13), non TEXT: niente escaping di

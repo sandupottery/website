@@ -84,11 +84,15 @@ describe("giornoDopo", () => {
 
 describe("giorniBrevi", () => {
 	test("un solo giorno", () => {
-		expect(giorniBrevi({ inizio: "2026-09-24" })).toBe("24");
+		expect(giorniBrevi({ inizio: "2026-09-24" }, "it")).toBe("gio 24");
 	});
 
 	test("due giorni consecutivi", () => {
-		expect(giorniBrevi({ inizio: "2026-09-19", fine: "2026-09-20" })).toBe("19–20");
+		expect(giorniBrevi({ inizio: "2026-09-19", fine: "2026-09-20" }, "it")).toBe("sab 19 – dom 20");
+	});
+
+	test("inglese", () => {
+		expect(giorniBrevi({ inizio: "2026-09-24" }, "en")).toBe("Thu 24");
 	});
 });
 

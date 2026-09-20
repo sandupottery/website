@@ -39,12 +39,18 @@ export function giornoDopo(iso: string): string {
 	return d.toISOString().slice(0, 10);
 }
 
-const giorno = (iso: string) => Number(iso.slice(8, 10));
-
-/** "24" oppure "19–20": solo i numeri, per l'elenco fitto. */
-export function giorniBrevi(m: Intervallo): string {
-	if (m.fine === undefined || m.fine === m.inizio) return String(giorno(m.inizio));
-	return `${giorno(m.inizio)}–${giorno(m.fine)}`;
+/**
+ * "gio 24" oppure "sab 19 – dom 20": la riga dell'elenco fitto.
+ *
+ * Il giorno della settimana c'è perché senza restava un numero solo, e un
+ * numero solo in colonna non si legge come una data finché non si risale al
+ * mese scritto da qualche parte più in alto. Il nome del giorno lo dichiara
+ * subito; il mese lo dice il filetto verticale del gruppo.
+ */
+export function giorniBrevi(m: Intervallo, locale: Locale): string {
+	const breve: Intl.DateTimeFormatOptions = { weekday: "short", day: "numeric" };
+	if (m.fine === undefined || m.fine === m.inizio) return formatta(m.inizio, locale, breve);
+	return `${formatta(m.inizio, locale, breve)} – ${formatta(m.fine, locale, breve)}`;
 }
 
 function formatta(iso: string, locale: Locale, opzioni: Intl.DateTimeFormatOptions): string {

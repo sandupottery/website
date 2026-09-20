@@ -33,6 +33,17 @@ describe("creaICS", () => {
 		expect(ics).toContain("DTEND;VALUE=DATE:20260925");
 	});
 
+	test("la regola sta fra DTEND e SUMMARY, e solo se c'è", () => {
+		const ics = creaICS([{ ...evento, regola: "FREQ=MONTHLY;BYDAY=TH;BYSETPOS=4" }], "M", STAMP);
+		expect(ics).toContain("RRULE:FREQ=MONTHLY;BYDAY=TH;BYSETPOS=4");
+		// Nessun escaping: RRULE è un RECUR, non un TEXT — i punti e virgola
+		// separano le parti della regola e non vanno protetti.
+		expect(ics).not.toContain("\\;");
+		expect(ics.indexOf("DTEND")).toBeLessThan(ics.indexOf("RRULE"));
+		expect(ics.indexOf("RRULE")).toBeLessThan(ics.indexOf("SUMMARY"));
+		expect(creaICS([evento], "M", STAMP)).not.toContain("RRULE");
+	});
+
 	test("scrive un evento di due giorni con DTEND al terzo giorno", () => {
 		const ics = creaICS(
 			[{ ...evento, uid: "x", inizio: "2026-09-19", fine: "2026-09-20" }],

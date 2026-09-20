@@ -23,9 +23,15 @@
 	--color-sp-foglie: #c9cfbe;
 	--color-sp-animali: #dbc3ac;
 	--color-sp-ciondoli: #c3d0cd;
+	/* Le due stanze che non sono collezioni hanno il loro colore come le altre:
+	   restare sulla carta le faceva leggere come una coda della pagina invece
+	   che come due stanze. L'argilla cruda per chi lavora, l'aria aperta per
+	   dove la si incontra. */
+	--color-sp-argilla: #e8dcc9;
+	--color-sp-cielo: #d5dce0;
 
 	/* Inchiostri. `--color-sp-tenue` è misurato: 4.51:1 sul fondo peggiore
-	   (animali), quindi supera AA su tutti e cinque i fondi. Non schiarirlo
+	   (animali), quindi supera AA su tutti e sette i fondi. Non schiarirlo
 	   senza rimisurare — vedi docs/brand.md. */
 	--color-sp-inchiostro: #1b1712;
 	--color-sp-tenue: #5c5247;
@@ -422,6 +428,12 @@ main.in-stanza {
 	padding: 0.13em 0.14em;
 	margin-left: -0.14em;
 	margin-right: -0.14em;
+	/* Identica a quella del corpo pagina, e non è un vezzo: `--ground` cambia a
+	   ogni fotogramma mentre si scorre, e se la fascia lo seguisse di colpo
+	   mentre il fondo ci arriva in nove decimi si vedrebbe un rettangolo di un
+	   altro colore per tutta la durata del cambio. Stessa durata, stessa curva,
+	   stesso valore di partenza: le due superfici restano indistinguibili. */
+	transition: background-color 0.9s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .soglia .titolo em {
@@ -689,18 +701,73 @@ main.in-stanza {
 	gap: 0.15rem;
 }
 
+/* La riga del calendario è quella del catalogo dei pezzi, pesata al contrario.
+   Nel catalogo la voce è il nome dell'opera e il prezzo è una postilla, quindi
+   il filetto può essere il segno più marcato dei tre. Qui la data e il luogo
+   sono l'unica cosa che qualcuno è venuto a leggere, e con lo stesso filetto
+   pieno la riga più visibile finiva per essere il divisorio. Quindi: i due capi
+   si scuriscono e crescono, il filetto si assottiglia. */
 .elenco .voce {
-	margin-top: 0.5rem;
-	gap: 0.85rem;
+	margin-top: 0.62rem;
+	gap: 0.9rem;
 }
 
+.elenco .voce .nome {
+	font-size: 1.06rem;
+	white-space: nowrap;
+}
+
+.elenco .voce .dato {
+	font-size: 1rem;
+	font-weight: 400;
+	letter-spacing: 0;
+	text-transform: none;
+	color: var(--ink);
+	white-space: normal;
+	text-align: right;
+}
+
+.elenco .voce .tratto {
+	border-bottom-width: 1px;
+	border-bottom-color: color-mix(in srgb, var(--tenue) 30%, transparent);
+	transform: translateY(-0.34em);
+}
+
+/* Il mese scritto in verticale accanto alle sue date, con il filetto che le
+   abbraccia — lo stesso segno del marchio nel margine. Scritto sopra il gruppo
+   come un titolino, invece, obbligava a risalire la colonna per capire a che
+   mese appartenesse il numero che si stava leggendo. */
 .elenco .mese {
-	margin-top: 2.1rem;
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	gap: 0 1.3rem;
+	margin-top: 2.2rem;
 	break-inside: avoid;
 }
 
-.elenco .mese .occhiello {
+/* La postilla di un elenco non è l'attacco di un discorso: senza questo
+   erediterebbe il corpo da 1.5rem che `.blocco > div p:first-child` dà al
+   primo capoverso della prosa, e il suggerimento peserebbe più delle date. */
+.blocco.elenco > div .nota {
+	font-size: 0.95rem;
+	line-height: 1.55;
+	margin: 0.2rem 0 0;
+}
+
+.elenco .mese > .occhiello {
+	writing-mode: vertical-rl;
+	/* In verticale `text-align` corre lungo la colonna: `right` è il fondo, che
+	   dopo il mezzo giro diventa la cima. Il mese si legge prima delle sue
+	   date, non dopo. */
+	text-align: right;
+	/* Mezzo giro: così si legge dal basso verso l'alto, come il marchio. Il
+	   bordo sinistro finisce a destra, cioè fra il mese e le sue date. */
+	transform: rotate(180deg);
+	align-self: stretch;
 	font-size: 0.7rem;
+	white-space: nowrap;
+	border-left: var(--peso) solid var(--ink);
+	padding-left: 0.85rem;
 }
 
 .elenco .mese ul {
@@ -1075,9 +1142,40 @@ body.tocca #disco {
 		display: none;
 	}
 
+	/* Un elemento vuoto in coda alla striscia, largo quanto la sfumatura.
+	   Senza, l'ultima voce resta sotto la maschera anche quando si è scorso
+	   fino in fondo: sfumata contro il cambio lingua, cioè illeggibile proprio
+	   quando la si è appena raggiunta. Un elemento flex e non un padding:
+	   il padding di coda di un contenitore flex scorrevole non è larghezza
+	   scorribile dappertutto, questo sì. */
+	#margine .indice::after {
+		content: "";
+		flex: 0 0 1.6rem;
+	}
+
 	#margine .indice a {
 		white-space: nowrap;
 		padding: 0.9rem 0;
+	}
+
+	/* Su un telefono la riga «quando — filetto — dove» non ci sta: il filetto
+	   si riduce a un trattino e il luogo va a capo allineato a destra, che è
+	   la forma meno leggibile possibile per un indirizzo. Si impila: la data,
+	   e sotto il posto. Il filetto sparisce perché non ha più due capi da
+	   unire. */
+	.elenco .voce {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.1rem;
+		margin-top: 1.15rem;
+	}
+
+	.elenco .voce .tratto {
+		display: none;
+	}
+
+	.elenco .voce .dato {
+		text-align: left;
 	}
 
 	#margine.barra .coda {

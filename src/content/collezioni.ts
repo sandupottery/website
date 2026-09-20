@@ -556,7 +556,7 @@ export const collezioni: readonly Collezione[] = [
 			it: "Sono Stefania Casto. Sandu Pottery è nata con Uwe, ed è il nostro progetto: continua a vivere perché continua a nutrirsi d'amore.",
 			en: "I am Stefania Casto. Sandu Pottery began with Uwe, and it is our project: it goes on living because it goes on feeding on love.",
 		},
-		fondo: "#F5F2EB",
+		fondo: "#E8DCC9",
 		soglia: {
 			foto: "/opere/atelier-asciugatura.jpg",
 			alt: {
@@ -669,7 +669,7 @@ export const collezioni: readonly Collezione[] = [
 			it: "Il mercatino resta l'incontro. Se una persona è interessata ad approfondire mi fa le domande, e il significato del mio lavoro arriva.",
 			en: "The market is still where the meeting happens. If someone wants to go deeper they ask me, and the meaning of the work gets through.",
 		},
-		fondo: "#F5F2EB",
+		fondo: "#D5DCE0",
 		soglia: {
 			foto: "/opere/atelier-mercatino.jpg",
 			alt: {
