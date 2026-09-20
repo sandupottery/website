@@ -4,9 +4,6 @@ import { collezioni, dopo, voci } from "@/content/collezioni";
 import { altraLingua, casa, percorsoStanza } from "@/lib/percorsi";
 import { frase } from "@/lib/testo";
 
-/** Il titolo senza la marcatura: serve dove va una riga sola e piatta. */
-const piatto = (t: string) => t.replace(/\*/g, "").replace("\n", " ");
-
 /**
  * Il margine. In home è una colonna a sinistra con l'indice delle stanze;
  * dentro una stanza è una barra in basso con il ritorno e la stanza dopo.
@@ -18,6 +15,13 @@ const piatto = (t: string) => t.replace(/\*/g, "").replace("\n", " ");
  * I legami dell'indice sono àncore vere (`href="#foglie"`): lo scorrimento
  * dolce lo fa il CSS, non il JavaScript. L'unica cosa che resta al client è
  * dire quale voce è quella corrente, e lo fa `Scorrimento`.
+ *
+ * Le frecce della coda stanno in uno `<span>` proprio invece di essere due
+ * caratteri dentro il testo: i due legami hanno corpi diversi — «Torna» è un
+ * maiuscoletto piccolo, il nome della stanza dopo è grande — e una freccia
+ * che eredita il corpo del suo legame esce grande da una parte e piccola
+ * dall'altra. Fuori dal testo la freccia ha una misura sola, e l'allineamento
+ * alla linea di base fa il resto.
  */
 export function Margine({ lingua, slug }: { lingua: Lingua; slug?: string }) {
 	const dentro = slug !== undefined;
@@ -25,7 +29,7 @@ export function Margine({ lingua, slug }: { lingua: Lingua; slug?: string }) {
 	const altra = altraLingua(lingua);
 
 	return (
-		<nav id="margine" className={dentro ? "barra" : undefined}>
+		<nav id="margine" className={dentro ? "barra" : undefined} aria-label={voci.indice[lingua]}>
 			<Link className="marchio" href={casa(lingua)} data-glifo="←">
 				Sandu Pottery
 			</Link>
@@ -34,7 +38,7 @@ export function Margine({ lingua, slug }: { lingua: Lingua; slug?: string }) {
 				<div className="indice">
 					{collezioni.map((c) => (
 						<a key={c.slug} href={`#${c.slug}`} data-sez={c.slug} data-glifo="↓">
-							{piatto(c.titolo[lingua])}
+							{c.breve[lingua]}
 						</a>
 					))}
 				</div>
@@ -45,10 +49,16 @@ export function Margine({ lingua, slug }: { lingua: Lingua; slug?: string }) {
 					{/* Il ritorno punta alla soglia da cui si è entrati, non alla cima:
 					    è quella la fotografia che deve ritrasformarsi nel titolo. */}
 					<Link className="torna" href={`${casa(lingua)}#${slug}`} data-glifo="←">
-						← {voci.torna[lingua]}
+						<span className="freccia" aria-hidden="true">
+							←
+						</span>
+						<span className="etichetta">{voci.torna[lingua]}</span>
 					</Link>
 					<Link className="avanti" href={percorsoStanza(lingua, prossima.slug)} data-glifo="→">
-						{frase(prossima.titolo[lingua].replace("\n", " "))} →
+						<span className="etichetta">{frase(prossima.titolo[lingua].replace("\n", " "))}</span>
+						<span className="freccia" aria-hidden="true">
+							→
+						</span>
 					</Link>
 				</div>
 			)}

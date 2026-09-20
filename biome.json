@@ -69,11 +69,21 @@
 			}
 		},
 		{
-			"includes": ["src/components/Casa.tsx", "src/components/Stanza.tsx"],
+			"includes": ["src/components/Immagine.tsx"],
 			"linter": {
 				"rules": {
 					"performance": {
 						"noImgElement": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/components/Dati.tsx", "src/components/ScriptFreschezza.tsx"],
+			"linter": {
+				"rules": {
+					"security": {
+						"noDangerouslySetInnerHtml": "off"
 					}
 				}
 			}

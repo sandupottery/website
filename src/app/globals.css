@@ -75,6 +75,14 @@
 		text-decoration: none;
 	}
 
+	/* `picture` è solo un contenitore: senza queste tre righe l'immagine dentro
+	   non eredita la scatola che il CSS ha già fissato alla figure. */
+	picture {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
 	img {
 		display: block;
 		width: 100%;
@@ -102,6 +110,55 @@
 	letter-spacing: 0.18em;
 	text-transform: uppercase;
 	color: var(--tenue);
+}
+
+/* Il numero della stanza. Un numero romano e basta: dice a che punto del
+   percorso siamo senza fingere di essere un'informazione, che è quello che
+   faceva «Collezione uno». Sta a sé perché va letto come un segno, non come
+   una parola — per questo è aria-hidden nel markup. */
+.numero {
+	display: flex;
+	align-items: baseline;
+	gap: 0.9rem;
+	margin: 0;
+	font-size: 1.15rem;
+	font-weight: 500;
+	letter-spacing: 0.2em;
+	color: var(--tenue);
+}
+
+/* Un «I» da solo si legge come un refuso, non come un numero. Il filetto gli
+   dà la lunghezza che gli manca ed è lo stesso segno del catalogo dei pezzi:
+   il sito ha già questo modo di dire «qui comincia qualcosa». */
+.numero::after {
+	content: "";
+	width: 3.4rem;
+	border-bottom: var(--peso) solid currentColor;
+	transform: translateY(-0.32em);
+}
+
+/* ═══ salta al contenuto ═══
+   Fuori campo finché non riceve la messa a fuoco: è la prima cosa che
+   incontra chi naviga da tastiera, e senza di essa dovrebbe attraversare
+   l'intero indice a ogni pagina. */
+.salta {
+	position: fixed;
+	top: 0.6rem;
+	left: 0.6rem;
+	z-index: 200;
+	transform: translateY(-160%);
+	background: var(--ground);
+	border: var(--peso) solid var(--ink);
+	padding: 0.6rem 1rem;
+	font-size: 0.8rem;
+	font-weight: 500;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	transition: transform 0.2s;
+}
+
+.salta:focus-visible {
+	transform: translateY(0);
 }
 
 /* ═══════════════ il margine ═══════════════
@@ -206,25 +263,47 @@ html.in-vt #margine {
 	display: none;
 }
 
+/* La coda è la voce centrale della barra, e deve stare al centro della barra —
+   non a metà fra il marchio e il cambio lingua, che è dove la spingerebbe un
+   `space-between` (le due voci ai lati hanno larghezze diverse, e la
+   differenza si vede). */
 #margine.barra .coda {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
 	display: flex;
-	align-items: center;
+	align-items: baseline;
 	gap: 2.4rem;
-	line-height: 1;
 }
 
 #margine.barra .lingua {
 	align-self: center;
 }
 
-#margine .coda .torna {
+/* Ogni legame è freccia + parola sulla stessa linea di base. `baseline` e non
+   `center`: i due legami hanno corpi diversi, e allineare le scatole invece
+   delle linee di base lascia una parola più alta dell'altra di qualche pixel. */
+#margine .coda a {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.55rem;
+}
+
+/* Una misura sola per entrambe le frecce, indipendente dal corpo del testo che
+   accompagnano: sono lo stesso segno e devono pesare uguale. */
+#margine .coda .freccia {
+	font-size: 1.05rem;
+	line-height: 1;
+}
+
+#margine .coda .torna .etichetta {
 	font-size: 0.8rem;
 	font-weight: 500;
 	letter-spacing: 0.13em;
 	text-transform: uppercase;
 }
 
-#margine .coda .avanti {
+#margine .coda .avanti .etichetta {
 	font-size: 1.05rem;
 	letter-spacing: -0.01em;
 }
@@ -298,8 +377,14 @@ main.in-stanza {
 	scroll-margin-top: 12vh;
 }
 
-.soglia .occhiello {
+.soglia .numero {
 	margin-bottom: 1.1rem;
+}
+
+/* Fotografia e titolo stanno nello stesso legame: è un blocco, non un
+   riquadro, e non deve aggiungere nulla all'impaginazione. */
+.soglia-a {
+	display: block;
 }
 
 .soglia figure {
@@ -310,11 +395,33 @@ main.in-stanza {
 	display: block;
 	position: relative;
 	z-index: 3;
+	margin: 0;
 	width: 100%;
 	font-size: clamp(2.6rem, 8.2vw, 6.4rem);
 	line-height: 0.9;
 	letter-spacing: -0.034em;
 	font-weight: 500;
+}
+
+/* ═══ la fascia ═══
+   Ogni riga del titolo si porta dietro una fascia del colore di fondo, larga
+   quanto il testo. Serve al contrasto: il titolo attraversa la fotografia, e
+   una fotografia può essere scura, chiara o variegata proprio lì sotto — su
+   uno schermo grande il problema si vede subito. Colore piatto e bordo netto,
+   niente sfumatura e niente `mix-blend-mode`: entrambi sono già stati provati
+   e bocciati, e soprattutto entrambi dipendono da che cosa c'è nella foto.
+   Questa no, e continuerà a funzionare con le fotografie che verranno.
+
+   I margini negativi valgono quanto il rientro della fascia, così il *testo*
+   — non la fascia — resta allineato al bordo del blocco, e la riga sotto il
+   titolo ci cade esattamente sotto. */
+.soglia .titolo .linea {
+	display: block;
+	width: fit-content;
+	background: var(--ground);
+	padding: 0.13em 0.14em;
+	margin-left: -0.14em;
+	margin-right: -0.14em;
 }
 
 .soglia .titolo em {
@@ -330,6 +437,10 @@ main.in-stanza {
 	color: var(--tenue);
 }
 
+/* Le impaginazioni. Per ognuna, tre cose vanno insieme e vanno lette insieme:
+   dov'è la fotografia, da che parte è allineato il titolo, e dove cade la
+   riga sotto — che deve finire sullo stesso bordo del titolo, altrimenti si
+   legge come un disallineamento e non come una composizione. */
 .c1 figure {
 	width: 78%;
 	height: min(68vh, 540px);
@@ -342,6 +453,9 @@ main.in-stanza {
 	   mentre la pagina no, quindi su schermi molto larghi un titolo ancorato
 	   al margine finirebbe per sfiorare appena la fotografia. */
 	padding-left: 8%;
+}
+.c1 .riga {
+	margin-left: 8%;
 }
 
 .c2 figure {
@@ -356,8 +470,14 @@ main.in-stanza {
 	   prima, così il bordo destro del testo cade dentro l'immagine. */
 	width: 62%;
 }
+.c2 .titolo .linea {
+	margin-left: auto;
+}
 .c2 .riga {
 	margin-left: auto;
+	/* 38% = il complemento della larghezza del titolo: il bordo destro dei due
+	   testi cade nello stesso punto. */
+	margin-right: 38%;
 	text-align: right;
 }
 
@@ -370,8 +490,12 @@ main.in-stanza {
 	margin-top: -6.2rem;
 	text-align: right;
 }
+.c3 .titolo .linea {
+	margin-left: auto;
+}
 .c3 .riga {
-	margin: 2.6rem 0 0 14%;
+	margin: 2.6rem 0 0 auto;
+	text-align: right;
 }
 
 .c4 figure {
@@ -386,7 +510,9 @@ main.in-stanza {
 	margin-top: -9.6rem;
 	text-align: right;
 }
-
+.c4 .titolo .linea {
+	margin-left: auto;
+}
 .c4 .riga {
 	margin-left: auto;
 	text-align: right;
@@ -400,9 +526,26 @@ main.in-stanza {
 	margin-top: -4rem;
 	text-align: center;
 }
+.c5 .titolo .linea {
+	margin-inline: auto;
+}
 .c5 .riga {
 	margin: 1.6rem auto 0;
 	text-align: center;
+}
+
+.c6 figure {
+	width: 66%;
+	height: min(62vh, 500px);
+	margin-left: 22%;
+}
+.c6 .titolo {
+	margin-top: -7.4rem;
+	text-align: left;
+	padding-left: 26%;
+}
+.c6 .riga {
+	margin-left: 26%;
 }
 
 .respiro {
@@ -525,13 +668,123 @@ main.in-stanza {
 	transform: translateY(-0.3em);
 }
 
-.voce .prezzo {
+/* Il dato all'altro capo del filetto: un prezzo nel catalogo dei pezzi, una
+   regola o un luogo nelle date dei mercatini. Stesso segno, perché è la stessa
+   riga. */
+.voce .dato {
 	font-size: 0.78rem;
 	font-weight: 500;
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
 	color: var(--tenue);
 	white-space: nowrap;
+}
+
+/* ═══════════════ le date, e come scrivermi ═══════════════
+   Stessa impaginazione a due colonne della prosa: l'occhiello a sinistra, il
+   contenuto a destra. Un calendario non ha bisogno di un disegno proprio. */
+.elenco > div {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+}
+
+.elenco .voce {
+	margin-top: 0.5rem;
+	gap: 0.85rem;
+}
+
+.elenco .mese {
+	margin-top: 2.1rem;
+	break-inside: avoid;
+}
+
+.elenco .mese .occhiello {
+	font-size: 0.7rem;
+}
+
+.elenco .mese ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+/* Le date e i luoghi sono legami: il filetto sottolineato li distingue dal
+   testo fermo senza aggiungere un colore che la tavolozza non ha. */
+.elenco a.nome,
+.elenco a.dato {
+	border-bottom: 1px solid color-mix(in srgb, var(--tenue) 45%, transparent);
+	padding-bottom: 0.08em;
+	transition: border-color 0.3s;
+}
+
+.elenco a.nome:hover,
+.elenco a.dato:hover {
+	border-bottom-color: var(--ink);
+}
+
+.elenco a.dato {
+	white-space: normal;
+	text-align: right;
+}
+
+.nota {
+	margin: 1.1rem 0 0;
+	font-size: 0.95rem;
+	font-style: italic;
+	line-height: 1.55;
+	color: var(--tenue);
+}
+
+/* Lo mostra `ScriptFreschezza` soltanto quando non resta nessuna data. */
+[data-nessuna-data] {
+	display: none;
+}
+
+.scarica {
+	align-self: flex-start;
+	margin-top: 1.8rem;
+	font-size: 0.74rem;
+	font-weight: 500;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--tenue);
+	border-bottom: var(--peso) solid currentColor;
+	padding-bottom: 0.15rem;
+	transition: color 0.3s;
+}
+
+.scarica:hover {
+	color: var(--ink);
+}
+
+.contatti .email {
+	display: inline-block;
+	margin-top: 1.4rem;
+	font-size: clamp(1.4rem, 3vw, 2rem);
+	letter-spacing: -0.02em;
+	border-bottom: var(--peso) solid var(--ink);
+	padding-bottom: 0.1em;
+}
+
+.contatti .profili {
+	list-style: none;
+	margin: 2rem 0 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+	font-size: 1rem;
+}
+
+.contatti .profili a {
+	border-bottom: 1px solid color-mix(in srgb, var(--tenue) 45%, transparent);
+	padding-bottom: 0.08em;
+	transition: border-color 0.3s;
+}
+
+.contatti .profili a:hover {
+	border-bottom-color: var(--ink);
 }
 
 .incontri {
@@ -687,6 +940,26 @@ body.tocca #disco {
 	z-index: 100;
 }
 
+/* Le due durate qui sotto non sono una rifinitura, sono una correzione.
+   `::view-transition-old/new` **ereditano** la durata del proprio gruppo: senza
+   queste righe la dissolvenza del margine dura 0.8s come lo spostamento, e per
+   mezzo secondo l'istantanea della colonna di sinistra — marchio in verticale e
+   filetto — resta stirata in mezzo alla pagina, sopra il testo della stanza che
+   sta entrando. Il movimento della scatola deve durare; il suo contenuto no.
+
+   L'uscita è rapida, l'entrata arriva quando la barra è quasi arrivata in
+   basso: prima la colonna lascia, poi il filetto scende, poi la barra parla. */
+::view-transition-old(margine) {
+	animation-duration: 0.2s;
+	animation-timing-function: ease-out;
+}
+
+::view-transition-new(margine) {
+	animation-duration: 0.34s;
+	animation-delay: 0.36s;
+	animation-timing-function: ease-in;
+}
+
 ::view-transition-group(.morph),
 ::view-transition-group(.titolo-morph) {
 	animation-duration: 0.85s;
@@ -767,17 +1040,49 @@ body.tocca #disco {
 		line-height: 1;
 	}
 
-	#margine .indice {
-		display: none;
-	}
-
-	/* In una stanza il marchio cede il posto alle due frecce: la freccia
-	   indietro è già il legame verso casa. */
+	/* Il marchio sparisce in entrambe le forme. In home è un legame verso la
+	   pagina su cui si è già; in una stanza la freccia indietro fa lo stesso
+	   lavoro. In una barra larga 390px lo spazio serve alla navigazione. */
+	#margine .marchio,
 	#margine.barra .marchio {
 		display: none;
 	}
 
+	/* L'indice diventa una striscia orizzontale. Senza, la barra in home
+	   conterrebbe soltanto il cambio lingua e non ci sarebbe modo di saltare
+	   da una stanza all'altra se non scorrendo tutta la pagina. */
+	#margine .indice {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 0.95rem;
+		flex: 1 1 auto;
+		min-width: 0;
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		scrollbar-width: none;
+		font-size: 0.82rem;
+		line-height: 1;
+		/* La striscia può essere più larga dello schermo. La maschera sfuma
+		   l'ultimo mezzo centimetro: è l'unico modo per far vedere che c'è
+		   dell'altro senza aggiungere una freccia o una barra di scorrimento a
+		   una barra alta tre centimetri e mezzo. Chi ha tutto in campo non la
+		   vede, perché non c'è niente da sfumare. */
+		mask-image: linear-gradient(to right, #000 calc(100% - 1.6rem), transparent);
+	}
+
+	#margine .indice::-webkit-scrollbar {
+		display: none;
+	}
+
+	#margine .indice a {
+		white-space: nowrap;
+		padding: 0.9rem 0;
+	}
+
 	#margine.barra .coda {
+		position: static;
+		transform: none;
 		gap: 1.1rem;
 		flex: 1 1 auto;
 		justify-content: space-between;
@@ -830,14 +1135,57 @@ body.tocca #disco {
 		margin: 0;
 	}
 
-	.soglia .titolo {
+	/* Le sei impaginazioni collassano su una sola: a piena larghezza non c'è
+	   spazio per farle differire, e un titolo rientrato del 26% resterebbe
+	   fuori dallo schermo. Vanno azzerate tutte e tre le regolazioni — il
+	   rientro, la larghezza ridotta e l'allineamento — e anche quelle della
+	   riga sotto, che le segue. */
+	.soglia .titolo,
+	.c1 .titolo,
+	.c2 .titolo,
+	.c6 .titolo {
 		margin-top: -2.4rem;
+		text-align: left;
+		padding-left: 0;
+		width: 100%;
+	}
+
+	.soglia .titolo .linea,
+	.c2 .titolo .linea,
+	.c3 .titolo .linea,
+	.c4 .titolo .linea,
+	.c5 .titolo .linea {
+		margin-left: -0.14em;
+		margin-right: -0.14em;
+	}
+
+	.soglia .riga,
+	.c1 .riga,
+	.c2 .riga,
+	.c3 .riga,
+	.c4 .riga,
+	.c5 .riga,
+	.c6 .riga {
+		margin: 1.2rem 0 0;
 		text-align: left;
 	}
 
-	.soglia .riga {
-		margin: 1.2rem 0 0;
-		text-align: left;
+	/* Il cursore personalizzato non esiste qui, quindi non c'è niente che
+	   dica che la soglia si apre. Questa è l'unica freccia visibile del sito,
+	   e compare solo dove serve: dove non c'è un puntatore. */
+	@media (hover: none) {
+		.soglia .titolo .linea:last-child::after {
+			content: "↗";
+			font-size: 0.34em;
+			font-weight: 400;
+			vertical-align: 0.5em;
+			margin-left: 0.3em;
+			color: var(--tenue);
+		}
+	}
+
+	.soglia-a:active {
+		opacity: 0.62;
 	}
 
 	.st-testa {

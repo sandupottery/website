@@ -1,24 +1,26 @@
 import { ViewTransition } from "react";
 import type { Blocco, Collezione, Lingua } from "@/content/collezioni";
-import { prezzo, voci } from "@/content/collezioni";
+import { collezioni, prezzo, romano, voci } from "@/content/collezioni";
 import { frase } from "@/lib/testo";
 import { Cima } from "./Cima";
+import { Dati } from "./Dati";
+import { Contatti, Mercati } from "./Dove";
+import { Immagine } from "./Immagine";
 import { Margine } from "./Margine";
+import { ScriptFreschezza } from "./ScriptFreschezza";
 
-function Pezzi({ blocco, lingua }: { blocco: Blocco; lingua: Lingua }) {
-	if (blocco.tipo !== "pezzi") return null;
+function Pezzi({ pezzi, lingua }: { pezzi: readonly Pezzo[]; lingua: Lingua }) {
 	return (
-		<div className={`gruppo ${blocco.pezzi.length === 2 ? "due" : "uno"}`}>
+		<div className={`gruppo ${pezzi.length === 2 ? "due" : "uno"}`}>
 			<div className="scatti">
-				{blocco.pezzi.map((p) => (
+				{pezzi.map((p) => (
 					<div className="pz" key={p.foto + p.nome.it}>
 						<figure>
-							<img
-								src={p.foto}
+							<Immagine
+								foto={p.foto}
 								alt={p.nome[lingua]}
-								style={{ objectPosition: p.fuoco }}
-								loading="lazy"
-								decoding="async"
+								fuoco={p.fuoco}
+								sizes="(max-width: 880px) 100vw, 44vw"
 							/>
 						</figure>
 						{/* La didascalia da catalogo: nome, filetto, prezzo. Una riga
@@ -29,7 +31,7 @@ function Pezzi({ blocco, lingua }: { blocco: Blocco; lingua: Lingua }) {
 								<i>{p.anno}</i>
 							</span>
 							<span className="tratto" aria-hidden="true" />
-							<span className="prezzo">{prezzo}</span>
+							<span className="dato">{prezzo}</span>
 						</p>
 					</div>
 				))}
@@ -37,6 +39,34 @@ function Pezzi({ blocco, lingua }: { blocco: Blocco; lingua: Lingua }) {
 		</div>
 	);
 }
+
+type Pezzo = Extract<Blocco, { tipo: "pezzi" }>["pezzi"][number];
+
+/** Un blocco per volta. Il tipo discrimina, così aggiungerne uno è un caso in più. */
+function Corpo({ blocco, lingua }: { blocco: Blocco; lingua: Lingua }) {
+	switch (blocco.tipo) {
+		case "prosa":
+			return (
+				<div className="blocco">
+					<p className="occhiello">{blocco.etichetta[lingua]}</p>
+					<div>
+						{blocco.paragrafi.map((p) => (
+							<p key={p.it.slice(0, 40)}>{frase(p[lingua])}</p>
+						))}
+					</div>
+				</div>
+			);
+		case "pezzi":
+			return <Pezzi pezzi={blocco.pezzi} lingua={lingua} />;
+		case "mercati":
+			return <Mercati locale={lingua} />;
+		case "contatti":
+			return <Contatti locale={lingua} />;
+	}
+}
+
+const chiaveBlocco = (b: Blocco, i: number): string =>
+	b.tipo === "prosa" ? b.etichetta.it : b.tipo === "pezzi" ? b.pezzi[0].foto : `${b.tipo}${i}`;
 
 /**
  * Una stanza: la prosa lunga della collezione, i pezzi con il loro prezzo e,
@@ -50,16 +80,27 @@ function Pezzi({ blocco, lingua }: { blocco: Blocco; lingua: Lingua }) {
  */
 export function Stanza({ collezione, lingua }: { collezione: Collezione; lingua: Lingua }) {
 	const c = collezione;
+	const indice = collezioni.findIndex((x) => x.slug === c.slug);
+	const conDate = c.blocchi.some((b) => b.tipo === "mercati");
+
 	return (
 		<>
 			<Cima />
 			<style>{`:root{--ground:${c.fondo}}`}</style>
 
+			<a className="salta" href="#contenuto">
+				{voci.saltaAlContenuto[lingua]}
+			</a>
+
 			<Margine lingua={lingua} slug={c.slug} />
 
-			<main className="in-stanza">
+			<Dati lingua={lingua} stanza={c} />
+
+			<main className="in-stanza" id="contenuto">
 				<div className="st-testa">
-					<p className="occhiello">{c.etichetta[lingua]}</p>
+					<p className="numero" aria-hidden="true">
+						{romano(indice)}
+					</p>
 					<div className="riga2">
 						<ViewTransition
 							name={`titolo-${c.slug}`}
@@ -84,29 +125,23 @@ export function Stanza({ collezione, lingua }: { collezione: Collezione; lingua:
 					default="none"
 				>
 					<figure className="st-eroe">
-						<img
-							src={c.eroe.foto}
+						<Immagine
+							foto={c.eroe.foto}
 							alt={c.eroe.alt[lingua]}
-							style={{ objectPosition: c.eroe.fuoco }}
-							decoding="async"
+							fuoco={c.eroe.fuoco}
+							subito
+							sizes="(max-width: 880px) 100vw, 92vw"
 						/>
 					</figure>
 				</ViewTransition>
 
-				{c.blocchi.map((b) =>
-					b.tipo === "prosa" ? (
-						<div className="blocco" key={b.etichetta.it}>
-							<p className="occhiello">{b.etichetta[lingua]}</p>
-							<div>
-								{b.paragrafi.map((p) => (
-									<p key={p.it.slice(0, 40)}>{frase(p[lingua])}</p>
-								))}
-							</div>
-						</div>
-					) : (
-						<Pezzi blocco={b} key={b.pezzi[0].foto} lingua={lingua} />
-					),
-				)}
+				{c.blocchi.map((b, i) => (
+					<Corpo blocco={b} key={chiaveBlocco(b, i)} lingua={lingua} />
+				))}
+
+				{/* Subito dopo il markup che tocca, non nel layout: deve girare
+				    quando le righe delle date esistono già. */}
+				{conDate && <ScriptFreschezza />}
 
 				{c.incontri ? (
 					<div className="incontri">
@@ -114,7 +149,7 @@ export function Stanza({ collezione, lingua }: { collezione: Collezione; lingua:
 						<div>
 							{c.incontri.map((i) => (
 								<blockquote key={i.testo.it.slice(0, 40)}>
-									{i.testo[lingua]}
+									{frase(i.testo[lingua])}
 									<footer>{i.chi[lingua]}</footer>
 								</blockquote>
 							))}

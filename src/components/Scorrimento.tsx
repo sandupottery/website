@@ -92,7 +92,17 @@ export function Scorrimento() {
 					if (!e.isIntersecting) continue;
 					const sez = (e.target as HTMLElement).dataset.sez;
 					for (const v of voci) {
-						v.setAttribute("aria-current", String(v.dataset.sez === sez));
+						// `aria-current="false"` sarebbe valido, ma resta un attributo da
+						// annunciare: dove non è corrente si toglie.
+						if (v.dataset.sez !== sez) {
+							v.removeAttribute("aria-current");
+							continue;
+						}
+						v.setAttribute("aria-current", "true");
+						// Su telefono l'indice è una striscia che scorre in orizzontale:
+						// senza questo la voce corrente può restare fuori campo, e chi
+						// guarda non ha modo di accorgersi che ce ne sono altre.
+						v.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
 					}
 				}
 			},

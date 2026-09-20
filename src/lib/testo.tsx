@@ -32,3 +32,20 @@ export function frase(testo: string): ReactNode[] {
 		return pezzo;
 	});
 }
+
+/**
+ * Lo stesso testo, ma spezzato in righe: ogni `\n` diventa un blocco a sé
+ * invece di un `<br>`.
+ *
+ * Serve ai titoli grandi, e la ragione è il contrasto. Ogni riga porta dietro
+ * di sé una fascia del colore di fondo larga quanto il testo (vedi `.linea` in
+ * globals.css), così il titolo resta leggibile qualunque cosa ci sia nella
+ * fotografia sotto. Con dei `<br>` la fascia sarebbe una sola, larga quanto la
+ * riga più lunga, e le righe corte si porterebbero dietro un rettangolo vuoto;
+ * peggio, con `box-decoration-break: clone` su un solo elemento le fasce di due
+ * righe consecutive si sovrappongono e la seconda taglia le lettere della prima
+ * — perché l'interlinea dei titoli è 0.9 e le fasce sono più alte di così.
+ */
+export function righe(testo: string): { chiave: string; nodi: ReactNode[] }[] {
+	return testo.split("\n").map((riga) => ({ chiave: riga, nodi: frase(riga) }));
+}
