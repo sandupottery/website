@@ -351,49 +351,29 @@ main.in-stanza {
 }
 
 /* ═══ il glifo dello scorri ═══
-   Una freccia disegnata a mano in SVG e la parola in verticale accanto: il
-   sito ha già una scritta verticale — il marchio nel margine — quindi questa
-   ne è l'eco, non un'idea nuova.
-
-   La freccia è disegnata, non composta con i bordi di un quadrato ruotato,
-   perché deve appartenere al carattere: l'asta si assottiglia scendendo come
-   l'asta di una lettera, e la punta è due tratti stretti e lunghi, non una
-   cuspide a quarantacinque gradi. Il moto è un respiro lento, non uno
-   scatto — una cosa che scende e risale sempre con la stessa dolcezza. */
+   Un filetto verticale e la parola in verticale accanto: il sito ha già una
+   scritta verticale — il marchio nel margine — quindi questa ne è l'eco, non
+   un'idea nuova. Nessuna punta e nessun moto: una freccia disegnata porta in
+   pagina la mano di un altro carattere, e in una pagina dove niente si muove
+   da solo l'unica cosa che lo facesse sarebbe un ammiccamento. Che la pagina
+   continui sotto lo dice già il filetto che scende oltre la parola. */
 .scorri {
 	position: absolute;
 	left: 3rem;
 	bottom: 2.6rem;
 	margin: 0;
 	display: flex;
-	align-items: flex-start;
-	/* Nessuno spazio dichiarato: la punta è larga e l'asta è sottile, quindi
-	   l'SVG si porta dietro il suo margine ottico ai lati dell'asta. Qualunque
-	   valore qui si somma a quello e stacca la parola dalla freccia. */
-	gap: 0;
+	align-items: flex-end;
+	gap: 0.85rem;
 	color: var(--tenue);
 	pointer-events: none;
 }
 
-.scorri .freccia {
-	display: block;
+.scorri .asta {
 	flex: 0 0 auto;
+	width: 1px;
 	height: 4.8rem;
-	width: auto;
-	overflow: visible;
-	animation: sp-scorri 3.4s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-}
-
-@keyframes sp-scorri {
-	0%,
-	100% {
-		transform: translateY(-0.28rem);
-		opacity: 0.5;
-	}
-	50% {
-		transform: translateY(0.34rem);
-		opacity: 1;
-	}
+	background: color-mix(in srgb, var(--tenue) 45%, transparent);
 }
 
 .scorri .parola {
@@ -1447,10 +1427,6 @@ body.tocca #disco {
 
 /* ═══════════════ movimento ridotto ═══════════════ */
 @media (prefers-reduced-motion: reduce) {
-	.scorri .asta::before {
-		animation: none;
-	}
-
 	body.cursore-attivo #cursore {
 		display: none;
 	}

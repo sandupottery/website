@@ -48,8 +48,15 @@ export function Margine({ lingua, slug }: { lingua: Lingua; slug?: string }) {
 			{dentro && prossima && (
 				<div className="coda">
 					{/* Il ritorno punta alla soglia da cui si è entrati, non alla cima:
-					    è quella la fotografia che deve ritrasformarsi nel titolo. */}
-					<Link className="torna" href={`${casa(lingua)}#${slug}`} data-glifo="←">
+					    è quella la fotografia che deve ritrasformarsi nel titolo. E
+					    `scroll={false}`, perché lo scorrimento se lo prende `Scorrimento`:
+					    rimette la home alla quota esatta da cui si era partiti, che è più
+					    precisa dell'àncora e — cosa che conta — arriva prima della
+					    pittura. Lasciato a Next, il salto all'àncora arriverebbe dopo, e
+					    si vedrebbe la pagina assestarsi a transizione finita. L'`href`
+					    resta con l'àncora: senza JavaScript è l'unica cosa che riporta
+					    alla soglia giusta. */}
+					<Link className="torna" href={`${casa(lingua)}#${slug}`} scroll={false} data-glifo="←">
 						<span className="freccia" aria-hidden="true">
 							←
 						</span>

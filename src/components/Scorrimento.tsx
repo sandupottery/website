@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect } from "react";
-import { segnaStanza } from "@/lib/provenienza";
+import { prendiQuota, segnaQuota, segnaStanza } from "@/lib/provenienza";
 
 const esadecimale = (h: string): [number, number, number] => [
 	Number.parseInt(h.slice(1, 3), 16),
@@ -26,11 +26,12 @@ const mescola = (a: number[], b: number[], t: number) =>
  * 2. Il glifo dello scorri, che svanisce ai primi centimetri di pagina.
  * 3. La voce corrente nell'indice del margine.
  * 4. L'indice come via d'ingresso: scorre fino alla soglia e *poi* ci entra.
- * 5. Il ritorno da una stanza. Il legame «Torna» punta a `/#foglie`: qui lo
- *    si onora *prima* della pittura, così la fotografia della soglia è già
- *    al suo posto quando il browser fotografa la pagina nuova. Senza questo
- *    il titolo non avrebbe nulla in cui ritrasformarsi e la transizione
- *    diventerebbe una dissolvenza.
+ * 5. Il ritorno da una stanza, che dev'essere il rovescio dell'andata: la
+ *    home si rimette alla quota esatta da cui si era partiti — annotata
+ *    lasciandola, vedi `provenienza.ts` — e lo fa *prima* della pittura, così
+ *    la soglia è già al suo posto quando il browser fotografa la pagina
+ *    nuova. Senza questo il titolo non avrebbe nulla in cui ritrasformarsi e
+ *    la transizione diventerebbe una dissolvenza sopra un salto in cima.
  */
 export function Scorrimento() {
 	useLayoutEffect(() => {
@@ -38,9 +39,28 @@ export function Scorrimento() {
 		// un'altra stanza: ha la sua transizione e non gli serve la dissolvenza.
 		segnaStanza(false);
 
+		// Prima cosa: rimettersi dov'eravamo. La quota esatta è l'unica che fa
+		// del ritorno il rovescio dell'andata — la fotografia si rimpicciolisce
+		// nel titolo che l'aveva aperta, e quel titolo è dove l'abbiamo lasciato.
+		const quota = prendiQuota();
+		if (quota !== null) scrollTo({ top: quota, behavior: "instant" });
+
+		// Poi, solo se serve, l'àncora. Serve quando la quota non c'è (si arriva
+		// da fuori) o quando non basta: da una stanza raggiunta da un'altra
+		// stanza il «Torna» punta a una soglia che alla quota di prima può
+		// essere lontana. Quello che deve trovarsi in campo è il *titolo* — è
+		// lui la metà di casa della coppia, e fuori campo React gli toglie il
+		// nome — quindi si misura lui e non la soglia, che è alta uno schermo e
+		// risulterebbe «in vista» anche mostrando solo il suo bordo superiore.
+		// Se il titolo c'è già non si tocca nulla: spostarsi di un altro po'
+		// sarebbe proprio il salto da evitare.
 		const id = decodeURIComponent(location.hash.slice(1));
 		const meta = id ? document.getElementById(id) : null;
-		if (meta) meta.scrollIntoView({ behavior: "instant", block: "start" });
+		if (!meta) return;
+		const r = (meta.querySelector(".soglia-a") ?? meta).getBoundingClientRect();
+		if (r.bottom < 0 || r.top > innerHeight) {
+			meta.scrollIntoView({ behavior: "instant", block: "start" });
+		}
 	}, []);
 
 	useEffect(() => {
@@ -133,6 +153,20 @@ export function Scorrimento() {
 		//
 		// L'`href="#slug"` resta nel marcato: senza JavaScript l'indice continua
 		// a scorrere, che è il comportamento degradato giusto.
+		// ─── la quota da cui si esce ───
+		// Si annota al clic, e non smontando la home, perché quando React smonta
+		// questo albero la stanza che entra ha già chiamato il suo `scrollTo(0)`
+		// (vedi `Cima`) e `scrollY` vale zero: verificato: la pulizia registrava
+		// sempre 0, e il ritorno finiva in cima. Al clic invece la pagina è
+		// ancora ferma dov'è, ed è quella l'altezza a cui deve tornare.
+		//
+		// In cattura, così il valore è già scritto quando React comincia la
+		// navigazione. Un clic che non apre niente non fa danno: il valore si
+		// consuma solo rientrando in casa.
+		const nastro = document.querySelector<HTMLElement>(".nastro");
+		const esci = () => segnaQuota(scrollY);
+		nastro?.addEventListener("click", esci, true);
+
 		const indice = document.querySelector<HTMLElement>("#margine .indice");
 		const ridotto = matchMedia("(prefers-reduced-motion: reduce)");
 		/** Le attese in corso, da annullare alla smontatura: un ingresso già
@@ -190,6 +224,7 @@ export function Scorrimento() {
 
 		return () => {
 			removeEventListener("scroll", alloScorrere);
+			nastro?.removeEventListener("click", esci, true);
 			indice?.removeEventListener("click", entra);
 			for (const a of annulla) a();
 			osservatore.disconnect();

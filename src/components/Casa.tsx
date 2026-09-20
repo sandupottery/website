@@ -65,23 +65,10 @@ export function Casa({ lingua }: { lingua: Lingua }) {
 					    muoversi da sola in tutta la pagina. Nascosto ai lettori di
 					    schermo — «scorri» non è un'informazione per chi non scorre. */}
 					<p className="scorri" aria-hidden="true">
-						{/* Disegnata, non composta: l'asta ha lo spessore di un filetto del
-						    sito e la punta è due tratti stretti e lunghi che si assottigliano
-						    verso l'alto, come le grazie del carattere. Una cuspide a
-						    quarantacinque gradi — o peggio un carattere «↓» — porterebbe in
-						    pagina il disegno di un'altra mano. */}
-						<svg
-							className="freccia"
-							viewBox="0 0 14 80"
-							width="14"
-							height="80"
-							fill="currentColor"
-							aria-hidden="true"
-						>
-							<path d="M6.35 0 L7.65 0 L7.65 79.6 L6.35 79.6 Z" />
-							<path d="M7 79.6 L1.1 62.6 L7 75.6 Z" />
-							<path d="M7 79.6 L12.9 62.6 L7 75.6 Z" />
-						</svg>
+						{/* Un filetto e una parola, fermi. Una punta disegnata sarebbe il
+						    disegno di un'altra mano, e un moto qui sarebbe l'unica cosa che
+						    si muove da sola in un sito che non si muove. */}
+						<span className="asta" />
 						<span className="parola">{voci.scorri[lingua]}</span>
 					</p>
 				</section>
