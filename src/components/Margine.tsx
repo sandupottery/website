@@ -12,9 +12,10 @@ import { frase } from "@/lib/testo";
  * `view-transition-name: margine` (in globals.css) fa sì che il browser
  * animi da solo il passaggio da colonna a barra.
  *
- * I legami dell'indice sono àncore vere (`href="#foglie"`): lo scorrimento
- * dolce lo fa il CSS, non il JavaScript. L'unica cosa che resta al client è
- * dire quale voce è quella corrente, e lo fa `Scorrimento`.
+ * I legami dell'indice restano àncore vere (`href="#foglie"`), così senza
+ * JavaScript l'indice continua a portare alla soglia. Con JavaScript fanno
+ * di più: `Scorrimento` li intercetta, scorre fino alla soglia e *poi* ci
+ * entra — e sempre lui dice quale voce è quella corrente.
  *
  * Le frecce della coda stanno in uno `<span>` proprio invece di essere due
  * caratteri dentro il testo: i due legami hanno corpi diversi — «Torna» è un

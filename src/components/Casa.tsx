@@ -65,7 +65,23 @@ export function Casa({ lingua }: { lingua: Lingua }) {
 					    muoversi da sola in tutta la pagina. Nascosto ai lettori di
 					    schermo — «scorri» non è un'informazione per chi non scorre. */}
 					<p className="scorri" aria-hidden="true">
-						<span className="asta" />
+						{/* Disegnata, non composta: l'asta ha lo spessore di un filetto del
+						    sito e la punta è due tratti stretti e lunghi che si assottigliano
+						    verso l'alto, come le grazie del carattere. Una cuspide a
+						    quarantacinque gradi — o peggio un carattere «↓» — porterebbe in
+						    pagina il disegno di un'altra mano. */}
+						<svg
+							className="freccia"
+							viewBox="0 0 14 80"
+							width="14"
+							height="80"
+							fill="currentColor"
+							aria-hidden="true"
+						>
+							<path d="M6.35 0 L7.65 0 L7.65 79.6 L6.35 79.6 Z" />
+							<path d="M7 79.6 L1.1 62.6 L7 75.6 Z" />
+							<path d="M7 79.6 L12.9 62.6 L7 75.6 Z" />
+						</svg>
 						<span className="parola">{voci.scorri[lingua]}</span>
 					</p>
 				</section>
@@ -79,51 +95,55 @@ export function Casa({ lingua }: { lingua: Lingua }) {
 							data-fondo={c.fondo}
 							data-sez={c.slug}
 						>
-							{/* Nessun `aria-label`: il nome del legame se lo dànno il titolo,
-							    la riga e la descrizione della fotografia che contiene. Una
-							    etichetta esplicita sarebbe più breve, ma su un titolo che
-							    va a capo non combacerebbe mai con il testo che si vede —
-							    e chi comanda il browser a voce pronuncia quello. */}
-							<Link className="soglia-a" href={percorsoStanza(lingua, c.slug)} data-glifo="↗">
-								<div className="testo">
-									{/* Il numero romano al posto di «Collezione uno»: dice la
-									    stessa cosa — a che punto del percorso siamo — senza
-									    fingere di essere un'informazione. */}
-									<p className="numero" aria-hidden="true">
-										{romano(i)}
-									</p>
+							{/* Il legame è il titolo e nient'altro — nessun `aria-label`: il nome
+							    se lo dà il testo che contiene. Una etichetta esplicita sarebbe più
+							    breve, ma su un titolo che va a capo non combacerebbe mai con quello
+							    che si vede — e chi comanda il browser a voce pronuncia quello. */}
+							<div className="testo">
+								{/* Il numero romano al posto di «Collezione uno»: dice la stessa
+								    cosa — a che punto del percorso siamo — senza fingere di essere
+								    un'informazione. */}
+								<p className="numero" aria-hidden="true">
+									{romano(i)}
+								</p>
 
+								<Link className="soglia-a" href={percorsoStanza(lingua, c.slug)} data-glifo="↗">
 									<ViewTransition name={`titolo-${c.slug}`} share="titolo-morph" default="none">
 										<h2 className="titolo">
 											{righe(c.titolo[lingua]).map((riga, n, tutte) => (
 												<span className="linea" key={riga.chiave}>
 													{riga.nodi}
 													{/* Uno spazio vero fra una riga e l'altra. Due blocchi
-													    adiacenti senza spazio danno «Ciondoli eOrecchini»
-													    come testo dell'elemento, e il nome accessibile del
-													    legame non corrisponderebbe più a quello che si
-													    legge. In fine di riga lo spazio non si vede: il CSS
-													    lo lascia cadere. */}
+													    adiacenti senza spazio danno «Ciondoli eOrecchini» come
+													    testo dell'elemento, e il nome accessibile del legame non
+													    corrisponderebbe più a quello che si legge. In fine di
+													    riga lo spazio non si vede: il CSS lo lascia cadere. */}
 													{n < tutte.length - 1 ? " " : null}
 												</span>
 											))}
 										</h2>
 									</ViewTransition>
+								</Link>
 
-									<p className="riga">{c.riga[lingua]}</p>
-								</div>
+								<p className="riga">{c.riga[lingua]}</p>
+							</div>
 
-								<ViewTransition name={`eroe-${c.slug}`} share="morph" default="none">
-									<figure>
-										<Immagine
-											foto={c.soglia.foto}
-											alt={c.soglia.alt[lingua]}
-											fuoco={c.soglia.fuoco}
-											sizes="(max-width: 880px) 100vw, 60vw"
-										/>
-									</figure>
-								</ViewTransition>
-							</Link>
+							{/* Fuori dal legame, e di proposito: su schermo largo si entra dal
+							    titolo, non dalla fotografia. Così il cursore a disco compare solo
+							    dove si può davvero entrare, e sopra la fotografia resta il segno
+							    che dice «questa è una fotografia». Sul telefono, dove il cursore
+							    non esiste e il bersaglio dev'essere grande, il legame si distende
+							    su tutta la soglia — vedi `.soglia-a::after` in globals.css. */}
+							<ViewTransition name={`eroe-${c.slug}`} share="morph" default="none">
+								<figure>
+									<Immagine
+										foto={c.soglia.foto}
+										alt={c.soglia.alt[lingua]}
+										fuoco={c.soglia.fuoco}
+										sizes="(max-width: 880px) 100vw, 60vw"
+									/>
+								</figure>
+							</ViewTransition>
 						</section>
 					))}
 				</div>
