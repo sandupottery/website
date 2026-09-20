@@ -1101,6 +1101,19 @@ body.tocca #disco {
 	animation-delay: 0.1s;
 }
 
+/* Usciti dal marchio non c'è niente in cui rimpicciolirsi: la home arriva in
+   cima e la sua soglia è lontana. I due nomi condivisi diventerebbero nomi
+   senza compagno, e un nome senza compagno non sparisce con la pagina —
+   viene staccato e dissolto *sopra* quella che entra: la fotografia della
+   stanza, a tutta pagina, sospesa sopra la frase d'apertura. Tolti i nomi
+   resta la dissolvenza di tutta la pagina, che è anche il significato giusto:
+   dal marchio non si torna, si ricomincia. `!important` perché il nome lo
+   scrive React in linea, e in linea vince su tutto il resto. */
+html[data-uscita="marchio"] main.in-stanza h1,
+html[data-uscita="marchio"] main.in-stanza .st-eroe {
+	view-transition-name: none !important;
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
 	animation-duration: 0.5s;

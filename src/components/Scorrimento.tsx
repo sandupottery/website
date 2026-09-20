@@ -42,8 +42,12 @@ export function Scorrimento() {
 		// Prima cosa: rimettersi dov'eravamo. La quota esatta è l'unica che fa
 		// del ritorno il rovescio dell'andata — la fotografia si rimpicciolisce
 		// nel titolo che l'aveva aperta, e quel titolo è dove l'abbiamo lasciato.
+		// Dal marchio no: quello vuol dire ricominciare, e la home parte in cima.
+		// La quota si consuma lo stesso, altrimenti resterebbe buona per un
+		// ritorno che non è più quello per cui era stata presa.
 		const quota = prendiQuota();
-		if (quota !== null) scrollTo({ top: quota, behavior: "instant" });
+		const dalMarchio = document.documentElement.dataset.uscita === "marchio";
+		if (quota !== null && !dalMarchio) scrollTo({ top: quota, behavior: "instant" });
 
 		// Poi, solo se serve, l'àncora. Serve quando la quota non c'è (si arriva
 		// da fuori) o quando non basta: da una stanza raggiunta da un'altra
@@ -65,6 +69,11 @@ export function Scorrimento() {
 
 	useEffect(() => {
 		const radice = document.documentElement;
+		// Il segno dell'uscita dal marchio ha finito il suo lavoro: qui la
+		// fotografia della pagina è già stata scattata. Lasciarlo scritto
+		// toglierebbe la crescita anche al prossimo «Torna».
+		delete radice.dataset.uscita;
+
 		const soglie = [...document.querySelectorAll<HTMLElement>("[data-fondo]")];
 		if (soglie.length === 0) return;
 

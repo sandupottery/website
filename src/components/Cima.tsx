@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { segnaStanza, veniamoDaUnaStanza } from "@/lib/provenienza";
 
 /**
@@ -23,6 +23,17 @@ import { segnaStanza, veniamoDaUnaStanza } from "@/lib/provenienza";
  * scorre. Una dissolvenza breve basta, e va messa solo in quel caso —
  * arrivando da casa il movimento è già la crescita della fotografia, e una
  * dissolvenza sopra la annacquerebbe.
+ *
+ * **Segna l'uscita dal marchio.** Il «Torna» riporta alla soglia da cui si è
+ * entrati e lì la fotografia ha in cosa rimpicciolirsi; il marchio invece
+ * riporta in cima, dove di quella soglia non c'è niente. Senza dirlo a
+ * nessuno, la fotografia e il titolo restano nomi senza compagno: il browser
+ * li stacca dalla pagina e li lascia dissolvere *sopra* la home che nel
+ * frattempo è già arrivata — misurato, un'immagine a tutta pagina sospesa
+ * sopra la frase d'apertura per più di mezzo secondo. Marcata l'uscita, il
+ * foglio di stile toglie i due nomi (vedi globals.css) e non resta che la
+ * dissolvenza di tutta la pagina, che è poi quello che il marchio significa:
+ * non si torna, si ricomincia.
  */
 export function Cima() {
 	useLayoutEffect(() => {
@@ -34,6 +45,18 @@ export function Cima() {
 		segnaStanza(false);
 
 		return () => segnaStanza(true);
+	}, []);
+
+	useEffect(() => {
+		// In cattura: il segno dev'essere scritto prima che React cominci la
+		// navigazione, perché è durante quel commit che il browser fotografa la
+		// pagina. Lo cancella la home arrivando (vedi `Scorrimento`).
+		const marchio = document.querySelector<HTMLElement>("#margine .marchio");
+		const ricomincia = () => {
+			document.documentElement.dataset.uscita = "marchio";
+		};
+		marchio?.addEventListener("click", ricomincia, true);
+		return () => marchio?.removeEventListener("click", ricomincia, true);
 	}, []);
 
 	return null;
