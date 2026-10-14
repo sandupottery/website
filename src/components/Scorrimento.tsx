@@ -86,6 +86,15 @@ export function Scorrimento() {
 				// passaggio è continuo senza bisogno di alcuna transizione CSS.
 				t = Math.min(Math.max((mezzo - r.top) / Math.max(r.height, 1), 0), 1);
 			});
+			// L'apertura fa eccezione: è alta quasi due schermi ma per la maggior
+			// parte sta ferma, e la rampa verso la prima stanza deve cominciare
+			// quando la stanza compare in fondo, non al primo pixel. Arriva a 1
+			// nell'istante in cui la stanza tocca la fascia centrale e diventa
+			// `corrente`, quindi il passaggio resta continuo.
+			if (corrente?.classList.contains("apertura") && prossima && prossima !== corrente) {
+				const su = prossima.getBoundingClientRect().top;
+				t = Math.min(Math.max((innerHeight - su) / (innerHeight - mezzo), 0), 1);
+			}
 			if (!corrente || !prossima) return;
 			radice.style.setProperty(
 				"--ground",

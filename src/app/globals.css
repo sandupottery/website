@@ -348,40 +348,109 @@ main.in-stanza {
 }
 
 /* ═══════════════ l'apertura ═══════════════
-   Pochi pesi, scelti: 700 → 300 corsivo → 400, poi un occhiello, poi 700
-   corsivo. Non una scala che sale, che leggerebbe come un gradiente.
+   Il segno del logo visto dall'alto, come una tazza sul tornio, e a sinistra
+   la scritta e la frase. Il moto è in `Apertura.tsx`; qui c'è la scena ferma.
 
-   Tutto lo schermo, e nient'altro che la frase: è il respiro che serve
-   all'atterraggio, e lascia al glifo in basso il compito di dire — da solo e
-   senza ambiguità — che la pagina si scorre. `svh` e non `vh`: su un telefono
-   `vh` ignora la barra degli indirizzi, e il glifo finirebbe sotto la piega
-   proprio nell'unico schermo il cui mestiere è dire che sotto c'è dell'altro. */
+   La sezione è alta uno schermo più l'80%: in quel tratto il palco resta
+   fermo e lo scorrimento fa entrare nel segno. Il margine negativo fa salire
+   la prima stanza mentre il segno finisce di spegnersi, e `.nastro` sta
+   sopra (`z-index: 1`) perché le passi davanti e mai sotto. `svh` e non `vh`
+   per il palco: su un telefono `vh` ignora la barra degli indirizzi. */
 .apertura {
 	position: relative;
-	min-height: 100svh;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	padding: 4rem 3rem 8rem;
-	max-width: 60rem;
+	height: calc(100svh + 80vh);
+	margin-bottom: -50vh;
+}
+
+.palco {
+	position: sticky;
+	top: 0;
+	height: 100svh;
+	overflow: hidden;
+	/* Le unità `cq*` qui sotto: la posizione di partenza del segno in CSS,
+	   identica a quella che calcola lo script, così non salta all'idratazione. */
+	container-type: size;
+	--r: min(34cqh, 23cqw);
+}
+
+.segni {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+.segni .anello {
+	fill: none;
+	stroke: var(--color-sp-inchiostro);
+	stroke-width: 1;
+}
+
+.segni text {
+	font-family: var(--font-segno);
+	font-size: 12px;
+	font-weight: 500;
+	letter-spacing: 0.32em;
+	text-transform: uppercase;
+	fill: var(--color-sp-inchiostro);
+}
+
+.segno {
+	position: absolute;
+	left: calc(68cqw - var(--r));
+	top: calc(50cqh - var(--r));
+	width: calc(var(--r) * 512 / 221);
+	transform-origin: 0 0;
+	color: var(--color-sp-inchiostro);
+	pointer-events: none;
+}
+
+.segno svg,
+.parole .parola {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+.parole {
+	position: absolute;
+	left: 3rem;
+	top: 50%;
+	transform: translateY(-50%);
+	width: min(36%, 30rem);
+}
+
+.parole .parola {
+	width: 15rem;
+	margin-bottom: 3.2rem;
+}
+
+.parole h1 {
+	margin: 1.4rem 0 0;
+	font-size: clamp(2rem, 3.6vw, 3.3rem);
+	font-weight: 500;
+	line-height: 1.06;
+	letter-spacing: -0.025em;
+}
+
+.parole h1 em {
+	font-weight: 400;
 }
 
 /* ═══ il glifo dello scorri ═══
    Un filetto verticale e la parola in verticale accanto: il sito ha già una
    scritta verticale — il marchio nel margine — quindi questa ne è l'eco, non
-   un'idea nuova. Nessuna punta e nessun moto: una freccia disegnata porta in
-   pagina la mano di un altro carattere, e in una pagina dove niente si muove
-   da solo l'unica cosa che lo facesse sarebbe un ammiccamento. Che la pagina
-   continui sotto lo dice già il filetto che scende oltre la parola. */
+   un'idea nuova. Nessuna punta e nessun moto da solo. */
 .scorri {
 	position: absolute;
 	left: 3rem;
-	bottom: 2.6rem;
+	bottom: 2.4rem;
 	margin: 0;
 	display: flex;
 	align-items: flex-end;
 	gap: 0.85rem;
-	color: var(--tenue);
+	color: var(--color-sp-tenue);
 	pointer-events: none;
 }
 
@@ -389,7 +458,7 @@ main.in-stanza {
 	flex: 0 0 auto;
 	width: 1px;
 	height: 4.8rem;
-	background: color-mix(in srgb, var(--tenue) 45%, transparent);
+	background: color-mix(in srgb, var(--color-sp-tenue) 45%, transparent);
 }
 
 .scorri .parola {
@@ -399,44 +468,6 @@ main.in-stanza {
 	letter-spacing: 0.2em;
 	text-transform: uppercase;
 	line-height: 1;
-}
-
-.apertura .occhiello {
-	margin-bottom: 2.4rem;
-}
-
-.apertura h1 {
-	margin: 0;
-	font-weight: 400;
-	font-size: clamp(2.1rem, 5.6vw, 4.2rem);
-	line-height: 1.08;
-	letter-spacing: -0.025em;
-}
-
-.apertura .p1 {
-	font-weight: 700;
-}
-
-.apertura .p2 {
-	font-weight: 400;
-	font-style: italic;
-	font-size: 1.18em;
-}
-
-.apertura .p4 {
-	display: block;
-	margin: 1.5rem 0 0.9rem;
-	font-size: 0.4em;
-	font-weight: 500;
-	letter-spacing: 0.14em;
-	text-transform: uppercase;
-	line-height: 1.5;
-	color: var(--tenue);
-}
-
-.apertura .p5 {
-	font-weight: 700;
-	font-style: italic;
 }
 
 /* ═══════════════ il nastro ═══════════════
@@ -459,6 +490,10 @@ main.in-stanza {
 	--alt: 80vh;
 	--canale: 60%;
 	--salto: 1.1rem;
+	/* Sopra l'apertura, che le lascia salire addosso la prima stanza: il
+	   segno che si spegne le resta dietro. */
+	position: relative;
+	z-index: 1;
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) var(--canale);
 	column-gap: 3.2rem;
@@ -1572,18 +1607,40 @@ body.cursore-attivo .lente * {
 		cursor: auto;
 	}
 
-	.apertura {
-		min-height: 86svh;
-		padding: 3.4rem 1.2rem 6rem;
+	/* Su un telefono il segno sta in alto al centro, la scritta sopra e la
+	   frase in fondo: la stessa scena, in colonna. Lo «scorri» non serve, il
+	   dito lo sa. */
+	.palco {
+		--r: min(34cqw, 20cqh);
+	}
+
+	.segno {
+		left: calc(50cqw - var(--r));
+		top: calc(42cqh - var(--r));
+	}
+
+	.parole {
+		left: 1.2rem;
+		right: 1.2rem;
+		top: 1.4rem;
+		bottom: calc(3.4rem + 1.4rem);
+		transform: none;
+		width: auto;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.parole .parola {
+		width: 8.5rem;
+		margin-bottom: auto;
+	}
+
+	.parole h1 {
+		font-size: clamp(1.7rem, 7.4vw, 2.3rem);
 	}
 
 	.scorri {
-		left: 1.2rem;
-		bottom: 1.8rem;
-	}
-
-	.scorri .asta {
-		height: 3.4rem;
+		display: none;
 	}
 
 	/* Il nastro si srotola su una colonna sola: a piena larghezza non c'è

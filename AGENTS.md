@@ -24,6 +24,7 @@ Texts and photographs in `src/content/collezioni.ts` are working material: the c
 - One content model in `src/content/collezioni.ts` feeds the home, the rooms, the sitemap, the per-page metadata and the JSON-LD. Six entries: four collections, `chi-sono`, and `dove`. Only the first four are collections; the other two are rooms of the same shape, which is what makes the index, the bottom-bar cycle and `generateStaticParams` need no special cases.
 - The market calendar lives in the `dove` room as two content blocks (`{tipo:"mercati"}`, `{tipo:"contatti"}`) rendered by `src/components/Dove.tsx`, reading `mercati.ts`, `ricorrenze.ts`, `sito.ts` and `dizionario.ts`. The `.ics` files and the `Event` JSON-LD come from the same data.
 - The home→room transition is the browser's View Transitions API through React's `<ViewTransition>`. **No animation library.** See "Rules that will bite you".
+- The home opens on `src/components/Apertura.tsx`: the logo mark seen from above, which the scroll zooms into and fades while the first room rises *in front of it* (`.apertura` has a negative bottom margin, `.nastro` `z-index: 1`). The starting position is also in CSS (container units on `.palco`) so nothing jumps at hydration; change one formula, change the other.
 - Photographs are served as AVIF at two widths with a JPEG fallback, through `src/components/Immagine.tsx`. Every `<img>` on the site goes through it, except the one inside the lightbox.
 - Room photographs open in a lightbox, `src/components/Lente.tsx`: a native `<dialog>`, the thumbnail morphing into place with `element.animate` (crop rebuilt with `clip-path`), pinch/wheel/double-tap zoom, swipe and keyboard. `Immagine` with a `lente` prop renders the photo as a `<button class="lente-apri">`; one delegated listener does the rest.
 - Type: Source Serif 4 (variable, with optical size) for everything, Libre Franklin only for the small spaced capitals. Both in `src/lib/fonts.ts`.
@@ -35,7 +36,7 @@ Texts and photographs in `src/content/collezioni.ts` are working material: the c
 - Lefthook for git hooks; commitlint enforcing conventional commits
 - Tailwind CSS v4 via PostCSS, CSS-first `@theme` — there is no `tailwind.config.ts`
 - `bun test` for the pure functions in `src/lib/`
-- **No animation library, and none is needed.** Motion is the View Transitions API, CSS transitions, and one `requestAnimationFrame` loop for the scrolling background.
+- **No animation library, and none is needed.** Motion is the View Transitions API, CSS transitions, and `requestAnimationFrame` driven by scroll: the background in `Scorrimento.tsx`, the opening in `Apertura.tsx`.
 - `src/app/globals.css` is hand-written CSS with named classes, not utilities. The home is five distinct compositions, not a grid; in utilities that becomes forty arbitrary values per element. Tailwind stays for the `@theme` tokens and for whatever comes next (the market calendar).
 
 ## Commands

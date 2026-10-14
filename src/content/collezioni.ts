@@ -733,15 +733,15 @@ export const apertura = {
 		it: "Ceramica fatta a mano  ·  Bergamo",
 		en: "Handmade ceramics  ·  Bergamo",
 	},
-	uno: { it: "Faccio oggetti belli", en: "I make things" },
-	due: { it: "e da usare", en: "that are beautiful" },
-	tre: { it: "tutti i giorni.", en: "and made to be used." },
-	mezzo: {
-		it: "quattro collezioni, un solo discorso",
-		en: "four collections, one single subject",
+	frase: {
+		it: "Faccio oggetti belli *e da usare* tutti i giorni.",
+		en: "I make things *that are beautiful* and made to be used.",
 	},
-	quattro: { it: "La natura", en: "Nature" },
-	cinque: { it: ", e noi dentro.", en: ", and us inside it." },
+	/** La scritta che gira intorno al segno. */
+	giro: {
+		it: "Sandu Pottery · ceramica fatta a mano · Bergamo · una per volta",
+		en: "Sandu Pottery · handmade ceramics · Bergamo · one at a time",
+	},
 } satisfies Record<string, Testo>;
 
 export const voci = {

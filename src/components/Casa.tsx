@@ -1,17 +1,15 @@
 import Link from "next/link";
 import { ViewTransition } from "react";
 import type { Lingua } from "@/content/collezioni";
-import { apertura, collezioni, romano, voci } from "@/content/collezioni";
+import { collezioni, romano, voci } from "@/content/collezioni";
 import { percorsoStanza } from "@/lib/percorsi";
 import { righe } from "@/lib/testo";
+import { Apertura } from "./Apertura";
 import { Dati } from "./Dati";
 import { Immagine } from "./Immagine";
 import { Margine } from "./Margine";
 import { Piede } from "./Piede";
 import { Scorrimento } from "./Scorrimento";
-
-/** Il fondo di partenza: la carta. Lo stesso valore di `--color-sp-carta`. */
-const CARTA = "#F5F2EB";
 
 /**
  * La home: un nastro di fotografie e sei soglie.
@@ -50,28 +48,7 @@ export function Casa({ lingua }: { lingua: Lingua }) {
 			<Dati lingua={lingua} />
 
 			<main id="contenuto">
-				<section className="apertura" data-fondo={CARTA}>
-					<p className="occhiello">{apertura.occhiello[lingua]}</p>
-					<h1>
-						<span className="p1">{apertura.uno[lingua]}</span>{" "}
-						<span className="p2">{apertura.due[lingua]}</span> {apertura.tre[lingua]}
-						<span className="p4">{apertura.mezzo[lingua]}</span>
-						<span className="p5">{apertura.quattro[lingua]}</span>
-						{apertura.cinque[lingua]}
-					</h1>
-
-					{/* Il primo schermo non contiene altro che la frase: questo dice che
-					    sotto c'è dell'altro, ed è l'unica cosa che ha il diritto di
-					    muoversi da sola in tutta la pagina. Nascosto ai lettori di
-					    schermo — «scorri» non è un'informazione per chi non scorre. */}
-					<p className="scorri" aria-hidden="true">
-						{/* Un filetto e una parola, fermi. Una punta disegnata sarebbe il
-						    disegno di un'altra mano, e un moto qui sarebbe l'unica cosa che
-						    si muove da sola in un sito che non si muove. */}
-						<span className="asta" />
-						<span className="parola">{voci.scorri[lingua]}</span>
-					</p>
-				</section>
+				<Apertura lingua={lingua} />
 
 				<div className="nastro">
 					{collezioni.map((c, i) => (
