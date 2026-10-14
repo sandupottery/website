@@ -24,14 +24,22 @@ type Props = {
 	subito?: boolean;
 	/** Quanto sarà larga in pagina, per far scegliere al browser la misura. */
 	sizes?: string;
+	/**
+	 * Se c'è, la fotografia si apre nella lente (`Lente.tsx`): diventa un
+	 * bottone vero, con questo come nome accessibile. Un bottone e non un
+	 * `onClick` su `figure`, così si raggiunge da tastiera e si annuncia per
+	 * quello che fa — e il componente resta del server: il clic lo raccoglie
+	 * la lente, delegato, da un ascoltatore solo.
+	 */
+	lente?: string;
 };
 
 const PREDEFINITO = "(max-width: 880px) 100vw, 80vw";
 
-export function Immagine({ foto, alt, fuoco, subito, sizes = PREDEFINITO }: Props) {
+export function Immagine({ foto, alt, fuoco, subito, sizes = PREDEFINITO, lente }: Props) {
 	const base = foto.replace(/\.jpg$/, "");
 
-	return (
+	const immagine = (
 		<picture>
 			<source type="image/avif" srcSet={`${base}-s.avif 800w, ${base}.avif 1600w`} sizes={sizes} />
 			<img
@@ -43,5 +51,13 @@ export function Immagine({ foto, alt, fuoco, subito, sizes = PREDEFINITO }: Prop
 				decoding="async"
 			/>
 		</picture>
+	);
+
+	if (!lente) return immagine;
+
+	return (
+		<button type="button" className="lente-apri" aria-label={lente} data-glifo="+">
+			{immagine}
+		</button>
 	);
 }

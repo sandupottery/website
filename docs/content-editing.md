@@ -1,51 +1,53 @@
-# Aggiungere o modificare una data
+# Le date dei mercatini
 
-Le date vivono in un solo file: `src/content/mercati.ts`.
+## Per Stefania: dal telefono
 
-## Aggiungere un mercato
+1. Apri **anteprima.sandupottery.com/admin** (conviene salvarla nella schermata
+   Home: dal browser, «Condividi» → «Aggiungi a Home»).
+2. La prima volta scrivi la tua email: ti arriva un codice, lo inserisci e sei
+   dentro. Il telefono se lo ricorda per un mese.
+3. **Aggiungere una data:** «+ Aggiungi una data» → scegli il giorno → tocca uno
+   dei posti dove sei già stata (oppure scrivi città e luogo) →
+   «Aggiungi al calendario».
+4. **Cambiare o togliere una data:** toccala nell'elenco. In fondo trovi anche
+   «Stesso posto, un'altra data», per ripetere un mercato senza riscriverlo.
+5. **I mercati di ogni mese** (Bergamo Alta, piazza Diaz…) stanno nella scheda
+   «Ogni mese»: si sceglie la settimana, il giorno e i mesi, e sotto compaiono le
+   prossime date per controllare.
 
-Inserisci un oggetto **in ordine cronologico** nell'array `mercati`:
+Dopo ogni salvataggio il sito si aggiorna da solo in circa 3 minuti: in cima
+alla pagina vedi «Il sito si aggiorna…» e poi «✓ Il sito è aggiornato». Puoi
+anche chiudere la pagina subito. Le date passate spariscono dal sito da sole.
 
-```ts
-	{
-		id: "2027-03-14-bergamo-cavour",
-		inizio: "2027-03-14",
-		citta: "Bergamo",
-		luogo: "Bergamo centro, piazza Cavour",
-		mappa: mappa("Piazza Cavour, Bergamo"),
-	},
+## Per chi tiene il codice
+
+Le date stanno in `src/content/calendario.json`, che di norma scrive la pagina
+`/admin` (vedi `docs/admin.md`). Si può anche modificare a mano, con due
+regole:
+
+- La forma del file è quella di `serializza()` in `src/lib/calendario.ts`
+  (tabulazioni, campi in quell'ordine, mercati ordinati). Il test
+  «è scritto nella forma canonica» lo controlla; per rimetterlo in forma:
+  `bun -e 'import {serializza} from "./src/lib/calendario"; import d from "./src/content/calendario.json"; await Bun.write("src/content/calendario.json", serializza(d))'`.
+- Biome non lo formatta, di proposito: se lo facesse, ogni salvataggio della
+  pagina farebbe fallire il lint.
+
+Un mercato:
+
+```json
+{
+	"id": "2027-03-14-bergamo-cavour",
+	"inizio": "2027-03-14",
+	"fine": "2027-03-15",
+	"citta": "Bergamo",
+	"luogo": "Bergamo centro, piazza Cavour",
+	"dettaglio": "facoltativo",
+	"indirizzo": "facoltativo: se manca vale «luogo, città»"
+}
 ```
 
-Per un mercato di più giorni aggiungi `fine` con l'ultimo giorno:
+Un mercato fisso: `settimana` è 1–4 o -1 (l'ultima), `giorno` è `MO`…`SU`,
+`mesi` 1–12. Le due frasi del sito, la RRULE dei `.ics` e il primo giorno si
+ricavano da questi tre campi.
 
-```ts
-		inizio: "2027-03-14",
-		fine: "2027-03-15",
-```
-
-Regole:
-
-- `id` deve essere unico e contenere solo minuscole, cifre e trattini — diventa il nome del file `.ics`.
-- `inizio` e `fine` sono ISO `YYYY-MM-DD`.
-- `mappa` usa sempre l'helper `mappa(...)`.
-- L'array deve restare ordinato per `inizio`.
-
-## Verificare
-
-```bash
-bun test
-```
-
-`tests/mercati.test.ts` controlla l'ordine, l'unicità degli id, la validità delle date e il giorno della settimana dei mercati ricorrenti (Bergamo Alta e Bergamo Bassa/piazza Cavour di domenica, Milano piazza Diaz di giovedì — con le due eccezioni dell'8 e 22 dicembre già documentate). Se passa, il calendario è coerente.
-
-Poi:
-
-```bash
-bun run build
-```
-
-Le date passate spariscono da sole nel browser: non serve ricostruire il sito quando una data scade.
-
-## Aggiornare le ricorrenze
-
-`src/content/ricorrenze.ts`. Ricorda di aggiornare **entrambe** le lingue (`regolaIt` e `regolaEn`).
+Poi `bun test` (valida il file) e `bun run build`.

@@ -751,6 +751,15 @@ export const voci = {
 	saltaAlContenuto: { it: "Salta al contenuto", en: "Skip to content" },
 	indice: { it: "Le stanze", en: "The rooms" },
 	scorri: { it: "Scorri", en: "Scroll" },
+	ingrandisci: { it: "Ingrandisci", en: "Enlarge" },
+	chiudi: { it: "Chiudi", en: "Close" },
+	precedente: { it: "Precedente", en: "Previous" },
+	successiva: { it: "Successiva", en: "Next" },
+	aiutoMouse: {
+		it: "Clic sulla foto per vederla da vicino",
+		en: "Click the photo to see it up close",
+	},
+	aiutoDito: { it: "Tocca due volte per ingrandire", en: "Double-tap to zoom in" },
 	descrizione: {
 		it: "Ceramica fatta a mano a Bergamo: tazze, foglie, animali, ciondoli e orecchini. Ogni pezzo è modellato e decorato uno per volta.",
 		en: "Handmade ceramics from Bergamo: cups, leaves, animals, pendants and earrings. Every piece is shaped and decorated one at a time.",

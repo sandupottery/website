@@ -1,3 +1,7 @@
+import type { RicorrenzaDati } from "@/lib/calendario";
+import { mappaDi, primaOccorrenza, regolaEn, regolaIt, rrule } from "@/lib/calendario";
+import calendario from "./calendario.json";
+
 export type Ricorrenza = {
 	/** Slug stabile: diventa anche il nome del file .ics. */
 	id: string;
@@ -23,44 +27,22 @@ export type Ricorrenza = {
 	mappa: string;
 };
 
-/** L'indirizzo è scritto una volta sola: il legame alla mappa lo si ricava. */
-const con = (r: Omit<Ricorrenza, "mappa">): Ricorrenza => ({
-	...r,
-	mappa: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.indirizzo)}`,
-});
-
-export const ricorrenze: readonly Ricorrenza[] = [
-	con({
-		id: "bergamo-bassa",
-		luogo: "Bergamo Bassa",
-		regolaIt: "la 2ª domenica — da marzo a giugno, e da ottobre a dicembre",
-		regolaEn: "2nd Sunday — March to June, and October to December",
-		regola: "FREQ=MONTHLY;BYDAY=SU;BYSETPOS=2;BYMONTH=3,4,5,6,10,11,12",
-		// 1º marzo 2026 è domenica: la seconda è l'8.
-		inizio: "2026-03-08",
-		citta: "Bergamo",
-		indirizzo: "Sentierone, Bergamo",
+/**
+ * I mercati che tornano ogni mese. Nel JSON c'è soltanto la regola in forma
+ * di scelta («2ª domenica, questi mesi»), che è quello che la cliente compila;
+ * le due frasi, la RRULE e il primo giorno si ricavano — vedi
+ * `src/lib/calendario.ts`.
+ */
+export const ricorrenze: readonly Ricorrenza[] = (calendario.ricorrenze as RicorrenzaDati[]).map(
+	(r) => ({
+		id: r.id,
+		luogo: r.luogo,
+		regolaIt: regolaIt(r),
+		regolaEn: regolaEn(r),
+		regola: rrule(r),
+		inizio: primaOccorrenza(r),
+		citta: r.citta,
+		indirizzo: r.indirizzo,
+		mappa: mappaDi(r.indirizzo),
 	}),
-	con({
-		id: "bergamo-alta",
-		luogo: "Bergamo Alta",
-		regolaIt: "la 4ª domenica — da aprile a giugno, e da settembre a dicembre",
-		regolaEn: "4th Sunday — April to June, and September to December",
-		regola: "FREQ=MONTHLY;BYDAY=SU;BYSETPOS=4;BYMONTH=4,5,6,9,10,11,12",
-		// Aprile 2026: domeniche 5, 12, 19, 26.
-		inizio: "2026-04-26",
-		citta: "Bergamo",
-		indirizzo: "Colle Aperto, Bergamo Alta",
-	}),
-	con({
-		id: "milano-diaz",
-		luogo: "Milano, piazza Diaz",
-		regolaIt: "il 4° giovedì di ogni mese",
-		regolaEn: "4th Thursday of every month",
-		regola: "FREQ=MONTHLY;BYDAY=TH;BYSETPOS=4",
-		// Gennaio 2026: giovedì 1, 8, 15, 22.
-		inizio: "2026-01-22",
-		citta: "Milano",
-		indirizzo: "Piazza Diaz, Milano",
-	}),
-];
+);

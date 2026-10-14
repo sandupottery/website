@@ -54,15 +54,27 @@ export function Cursore() {
 		const corpo = document.body;
 		corpo.classList.add("cursore-attivo");
 
+		/** L'elemento sotto il puntatore che dichiara un glifo. Il glifo si
+		 *  rilegge a ogni movimento perché può cambiare senza che si esca
+		 *  dall'elemento: nella lente la fotografia passa da «+» a «−». */
+		let attivo: HTMLElement | null = null;
+		const rileggi = () => {
+			const g = attivo?.dataset.glifo;
+			if (g && glifo.textContent !== g) glifo.textContent = g;
+		};
 		const muovi = (e: MouseEvent) => {
 			cur.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
+			rileggi();
 		};
 
 		const sopra = (e: MouseEvent) => {
 			const t = e.target as Element | null;
 			if (!t || !("closest" in t)) return;
 
-			const legame = t.closest("a");
+			// Anche ogni elemento che dichiara un glifo: la fotografia che si apre
+			// nella lente, e dentro la lente la fotografia, il fondo, i comandi.
+			const legame = t.closest<HTMLElement>("a, [data-glifo]");
+			attivo = legame;
 			corpo.classList.toggle("tocca", !!legame);
 
 			const suFoto = !legame && !!t.closest("figure");
@@ -89,12 +101,15 @@ export function Cursore() {
 
 		addEventListener("mousemove", muovi, { passive: true });
 		addEventListener("mouseover", sopra, { passive: true });
+		// Anche al clic: il clic stesso può cambiare il glifo (+ → −).
+		addEventListener("pointerup", rileggi, { passive: true });
 		document.addEventListener("mouseleave", esci);
 		document.addEventListener("mouseenter", entra);
 
 		return () => {
 			removeEventListener("mousemove", muovi);
 			removeEventListener("mouseover", sopra);
+			removeEventListener("pointerup", rileggi);
 			document.removeEventListener("mouseleave", esci);
 			document.removeEventListener("mouseenter", entra);
 			corpo.classList.remove("cursore-attivo", "tocca", "su-foto", "su-testo");

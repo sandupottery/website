@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "@/app/globals.css";
 import type { Lingua } from "@/content/collezioni";
 import { sito } from "@/content/sito";
-import { boska } from "@/lib/fonts";
+import { segno, serif } from "@/lib/fonts";
 import { Cursore } from "./Cursore";
 import { Transizione } from "./Transizione";
 
@@ -42,7 +42,7 @@ export const viewportRadice: Viewport = {
  */
 export function Radice({ lingua, children }: { lingua: Lingua; children: React.ReactNode }) {
 	return (
-		<html lang={lingua} className={boska.variable}>
+		<html lang={lingua} className={`${serif.variable} ${segno.variable}`}>
 			<body>
 				{children}
 				<Cursore />

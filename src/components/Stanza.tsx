@@ -6,6 +6,7 @@ import { Cima } from "./Cima";
 import { Dati } from "./Dati";
 import { Contatti, Mercati } from "./Dove";
 import { Immagine } from "./Immagine";
+import { Lente } from "./Lente";
 import { Margine } from "./Margine";
 import { ScriptFreschezza } from "./ScriptFreschezza";
 
@@ -21,6 +22,7 @@ function Pezzi({ pezzi, lingua }: { pezzi: readonly Pezzo[]; lingua: Lingua }) {
 								alt={p.nome[lingua]}
 								fuoco={p.fuoco}
 								sizes="(max-width: 880px) 100vw, 44vw"
+								lente={`${voci.ingrandisci[lingua]}: ${p.nome[lingua]}`}
 							/>
 						</figure>
 						{/* La didascalia da catalogo: nome, filetto, prezzo. Una riga
@@ -131,6 +133,7 @@ export function Stanza({ collezione, lingua }: { collezione: Collezione; lingua:
 							fuoco={c.eroe.fuoco}
 							subito
 							sizes="(max-width: 880px) 100vw, 92vw"
+							lente={`${voci.ingrandisci[lingua]}: ${c.eroe.alt[lingua]}`}
 						/>
 					</figure>
 				</ViewTransition>
@@ -159,6 +162,8 @@ export function Stanza({ collezione, lingua }: { collezione: Collezione; lingua:
 					<div className="coda-stanza" />
 				)}
 			</main>
+
+			<Lente lingua={lingua} />
 		</>
 	);
 }

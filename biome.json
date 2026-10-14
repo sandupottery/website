@@ -17,7 +17,8 @@
 			"!public",
 			"!.design",
 			"!.release-please-manifest.json",
-			"!CHANGELOG.md"
+			"!CHANGELOG.md",
+			"!src/content/calendario.json"
 		]
 	},
 	"formatter": {

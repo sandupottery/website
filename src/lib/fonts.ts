@@ -1,34 +1,40 @@
 import localFont from "next/font/local";
 
 /**
- * Boska (Fontshare, licenza libera anche per uso commerciale) è l'unico
- * carattere del sito: titoli e prosa. Le differenze le fanno il peso,
- * il corsivo e la dimensione — non un secondo carattere.
+ * Due caratteri, entrambi liberi (SIL OFL) e serviti da noi: niente
+ * richieste a terzi, niente dipendenza da un servizio esterno.
  *
- * Il file è servito da noi, non dal CDN di Fontshare: niente richieste a
- * terzi, niente flash di carattere di sistema, niente dipendenza da un
- * servizio esterno per un sito che deve restare in piedi da solo.
+ * **Source Serif 4** per titoli e prosa. Ha preso il posto di Boska, che era
+ * un carattere da titolo: ai corpi del testo i suoi filetti sottilissimi si
+ * spezzavano, e chi leggeva l'anteprima lo ha detto in molti. Questo è un
+ * carattere da libro, a contrasto basso, ed è il parente libero più vicino
+ * al Bradford di Emergence Magazine, che è il riferimento della cliente.
+ * È variabile anche nella *dimensione ottica* (`opsz` 8–60): il browser la
+ * regola da sé sul corpo, quindi lo stesso file è robusto nella prosa e
+ * fine nei titoli grandi. Un file per il tondo e uno per il corsivo coprono
+ * ogni peso fra 200 e 900.
  *
- * Nulla sotto il peso 300, e il 300 solo in corsivo e in grande (l'apertura
- * della home): ai corpi piccoli è illeggibile.
+ * **Libre Franklin** solo per i segni piccoli in maiuscolo spaziato —
+ * occhielli, numeri, prezzi, «Torna», il cambio lingua. Un maiuscoletto
+ * graziato a 13px era la cosa meno leggibile del sito; un grottesco a quel
+ * corpo regge. Fa la parte che in Emergence fa GT America.
  *
- * Sei tagli e non otto. `next/font/local` mette in precarico ogni file che
- * gli si dà, e due di questi non erano usati da nessuna regola: il 300 tondo
- * (esiste solo il 300 corsivo, nell'apertura) e il 500 corsivo. Erano 60 KB
- * scaricati con priorità alta su ogni pagina per non disegnare niente.
- * Se un giorno servisse un rilievo dentro un corsivo il browser lo sintetizza
- * — e a quel punto, se si vede, si aggiunge il taglio vero.
+ * Le frecce (← → ↗ ↔) non sono in nessuno dei due: le disegna il carattere
+ * di ripiego, come già succedeva con Boska.
  */
-export const boska = localFont({
+export const serif = localFont({
 	src: [
-		{ path: "../fonts/Boska-300i.woff2", weight: "300", style: "italic" },
-		{ path: "../fonts/Boska-400.woff2", weight: "400", style: "normal" },
-		{ path: "../fonts/Boska-400i.woff2", weight: "400", style: "italic" },
-		{ path: "../fonts/Boska-500.woff2", weight: "500", style: "normal" },
-		{ path: "../fonts/Boska-700.woff2", weight: "700", style: "normal" },
-		{ path: "../fonts/Boska-700i.woff2", weight: "700", style: "italic" },
+		{ path: "../fonts/SourceSerif4.woff2", weight: "200 900", style: "normal" },
+		{ path: "../fonts/SourceSerif4-Italic.woff2", weight: "200 900", style: "italic" },
 	],
-	variable: "--font-boska",
+	variable: "--font-serif",
 	display: "swap",
 	fallback: ["Georgia", "serif"],
+});
+
+export const segno = localFont({
+	src: [{ path: "../fonts/LibreFranklin.woff2", weight: "100 900", style: "normal" }],
+	variable: "--font-segno",
+	display: "swap",
+	fallback: ["Helvetica Neue", "Arial", "sans-serif"],
 });

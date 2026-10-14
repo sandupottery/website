@@ -8,3 +8,4 @@ tsconfig.tsbuildinfo
 .superpowers/
 .design/*.html
 !.design/*.dc.html
+.wrangler

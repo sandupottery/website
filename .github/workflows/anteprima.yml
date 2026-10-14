@@ -37,6 +37,11 @@ jobs:
         needs: ci
         runs-on: ubuntu-latest
         steps:
+            # Il codice serve anche qui, non solo la build: wrangler pubblica le
+            # Functions (`functions/`, la pagina /admin del calendario) solo se
+            # trova la cartella accanto a sé, e le compila dai sorgenti.
+            - uses: actions/checkout@v4
+
             - name: Download build artifact
               uses: actions/download-artifact@v4
               with:
