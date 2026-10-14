@@ -41,6 +41,10 @@ jobs:
             # Functions (`functions/`, la pagina /admin del calendario) solo se
             # trova la cartella accanto a sé, e le compila dai sorgenti.
             - uses: actions/checkout@v4
+            # Con il codice arriva anche `bun.lock`, e wrangler-action lo vede e
+            # si installa con Bun: senza questo passo fallisce con «Unable to
+            # locate executable file: bun».
+            - uses: oven-sh/setup-bun@v2
 
             - name: Download build artifact
               uses: actions/download-artifact@v4
