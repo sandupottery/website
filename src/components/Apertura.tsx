@@ -8,6 +8,8 @@ import { frase } from "@/lib/testo";
 
 /** I solchi del tornio intorno al segno, in multipli del suo raggio. */
 const SOLCHI = [1.3, 1.62, 2.0, 2.5, 3.15, 4.0];
+/** Sul telefono tre soli (il CSS nasconde gli altri), più larghi: il primo sta fuori dal giro. */
+const SOLCHI_STRETTO = [1.55, 2.0, 2.6];
 
 /**
  * I tempi, in frazioni del tratto in cui la scena sta ferma (`p` da 0 a 1).
@@ -16,6 +18,8 @@ const SOLCHI = [1.3, 1.62, 2.0, 2.5, 3.15, 4.0];
  * metà — gli passa davanti e arriva a metà schermo.
  */
 const T = { frase: [0, 0.32], giro: [0, 0.28], segno: [0.06, 0.8], solchi: [0, 0.9] } as const;
+/** Sul telefono il tratto è più corto (`.apertura`, 55vh): il giro se ne va un po' prima. */
+const T_STRETTO = { ...T, giro: [0, 0.25], segno: [0.04, 0.8], solchi: [0, 0.85] } as const;
 
 const limita = (v: number) => Math.min(Math.max(v, 0), 1);
 const verso = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -44,10 +48,12 @@ export function Apertura({ lingua }: { lingua: Lingua }) {
 		const svg = sezione?.querySelector<SVGSVGElement>(".segni");
 		const segno = sezione?.querySelector<HTMLElement>(".segno");
 		const parole = sezione?.querySelector<HTMLElement>(".parole");
+		const frase = parole?.querySelector("h1");
+		const sfuma = sezione?.querySelector<SVGLinearGradientElement>("#sfuma");
 		const giro = sezione?.querySelector<SVGPathElement>("#giro");
 		const testo = sezione?.querySelector<SVGTextElement>(".segni text");
 		const cerchi = [...(sezione?.querySelectorAll<SVGCircleElement>(".anello") ?? [])];
-		if (!sezione || !svg || !segno || !parole || !giro || !testo) return;
+		if (!sezione || !svg || !segno || !parole || !frase || !sfuma || !giro || !testo) return;
 
 		const ridotto = matchMedia("(prefers-reduced-motion: reduce)");
 		const punta = { x: 0.5, y: 0.5, tx: 0.5, ty: 0.5 };
@@ -64,20 +70,22 @@ export function Apertura({ lingua }: { lingua: Lingua }) {
 			const stretto = innerWidth < 881;
 			const r0 = sezione.getBoundingClientRect();
 			const p = limita(-r0.top / Math.max(r0.height - innerHeight, 1));
+			const t = stretto ? T_STRETTO : T;
+			const solchi = stretto ? SOLCHI_STRETTO : SOLCHI;
 
 			// Il segno: lento all'inizio, poi accelera, come una discesa. Con il
 			// movimento ridotto non cresce: si spegne soltanto.
 			const dentro = fermo ? 0 : p ** 3;
 			const c0x = stretto ? W * 0.5 : W * 0.68;
-			const c0y = stretto ? H * 0.42 : H * 0.5;
+			const c0y = stretto ? H * 0.36 : H * 0.5;
 			const verso0 = liscia(tra(p, [0, 0.7]));
 			const cx = verso(c0x, W * 0.5, fermo ? 0 : verso0);
 			const cy = verso(c0y, H * 0.5, fermo ? 0 : verso0);
-			const R = stretto ? Math.min(W * 0.34, H * 0.2) : Math.min(H * 0.34, W * 0.23);
+			const R = stretto ? Math.min(W * 0.27, H * 0.16) : Math.min(H * 0.34, W * 0.23);
 			const k = ((2 * R) / 221) * (1 + dentro * 9);
 			const ox = (punta.x - 0.5) * (stretto ? 0 : -14) * (1 - p);
 			const oy = (punta.y - 0.5) * (stretto ? 0 : -10) * (1 - p);
-			const spento = liscia(tra(p, T.segno));
+			const spento = liscia(tra(p, t.segno));
 			segno.style.left = "0";
 			segno.style.top = "0";
 			segno.style.width = `${256 * k}px`;
@@ -85,25 +93,33 @@ export function Apertura({ lingua }: { lingua: Lingua }) {
 			segno.style.opacity = String(1 - spento);
 			segno.style.visibility = spento >= 1 ? "hidden" : "";
 
-			// I solchi: più vicini, più veloci.
+			// I solchi: più vicini, più veloci. Sul telefono sfumano nei 90px
+			// sopra la frase, così nessuna linea attraversa una parola; sul
+			// computer la frase sta di lato e la sfumatura va fuori dallo schermo.
 			svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+			const fine = stretto
+				? frase.getBoundingClientRect().top - svg.getBoundingClientRect().top - 18
+				: 1e5;
+			sfuma.setAttribute("y1", String(fine - 90));
+			sfuma.setAttribute("y2", String(fine));
 			cerchi.forEach((c, i) => {
 				const d = (i + 1) * (stretto ? 3 : 8);
 				c.setAttribute("cx", String(cx - (punta.x - 0.5) * d * (1 - p)));
 				c.setAttribute("cy", String(cy - (punta.y - 0.5) * d * (1 - p)));
-				c.setAttribute("r", String(R * (SOLCHI[i] ?? 1) * (1 + dentro * (i + 2) * 2.2)));
-				c.setAttribute("opacity", String((0.5 - i * 0.055) * (1 - liscia(tra(p, T.solchi)))));
+				c.setAttribute("r", String(R * (solchi[i] ?? 1) * (1 + dentro * (i + 2) * 2.2)));
+				c.setAttribute("opacity", String((0.5 - i * 0.055) * (1 - liscia(tra(p, t.solchi)))));
 			});
 
-			const rg = R + (stretto ? 14 : 22);
+			// Sul telefono il giro sta oltre l'ansa (che arriva a 1.21 R), non ci sbatte.
+			const rg = stretto ? R * 1.34 : R + 22;
 			giro.setAttribute(
 				"d",
 				`M ${cx - rg} ${cy} a ${rg} ${rg} 0 1 1 ${rg * 2} 0 a ${rg} ${rg} 0 1 1 ${-rg * 2} 0`,
 			);
 			testo.setAttribute("transform", `rotate(${-8 + (fermo ? 0 : p * 160)} ${cx} ${cy})`);
-			testo.style.opacity = String(1 - liscia(tra(p, T.giro)));
+			testo.style.opacity = String(1 - liscia(tra(p, t.giro)));
 
-			const via = liscia(tra(p, T.frase));
+			const via = liscia(tra(p, t.frase));
 			parole.style.opacity = String(1 - via);
 			parole.style.translate = `0 ${-via * 50}px`;
 			parole.style.visibility = via >= 1 ? "hidden" : "";
@@ -139,8 +155,22 @@ export function Apertura({ lingua }: { lingua: Lingua }) {
 				<svg className="segni" aria-hidden="true">
 					<defs>
 						<path id="giro" />
+						<linearGradient
+							id="sfuma"
+							gradientUnits="userSpaceOnUse"
+							x1="0"
+							x2="0"
+							y1="99999"
+							y2="100000"
+						>
+							<stop offset="0" stopColor="#fff" />
+							<stop offset="1" stopColor="#000" />
+						</linearGradient>
+						<mask id="sopra" maskUnits="userSpaceOnUse">
+							<rect width="100000" height="100000" fill="url(#sfuma)" />
+						</mask>
 					</defs>
-					<g>
+					<g mask="url(#sopra)">
 						{SOLCHI.map((f) => (
 							<circle key={f} className="anello" />
 						))}

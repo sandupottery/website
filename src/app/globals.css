@@ -1607,16 +1607,27 @@ body.cursore-attivo .lente * {
 		cursor: auto;
 	}
 
-	/* Su un telefono il segno sta in alto al centro, la scritta sopra e la
-	   frase in fondo: la stessa scena, in colonna. Lo «scorri» non serve, il
-	   dito lo sa. */
+	/* Su un telefono la scena del computer, impilata, diventava sette voci in
+	   uno schermo: il nome detto tre volte, l'occhiello due, i solchi che
+	   tagliavano le parole. Qui si sottrae: il segno in alto con il giro (che
+	   dice già il nome e il luogo), tre solchi che sfumano prima della frase
+	   (`Apertura.tsx`), e la frase da sola in fondo. La scritta e l'occhiello
+	   restano per i lettori di schermo, perché il giro è `aria-hidden`.
+	   Il tratto fermo è più corto: il segno è piccolo, e con l'80% la prima
+	   stanza arrivava dopo mezzo schermo vuoto. Lo «scorri» non serve, il dito
+	   lo sa. */
+	.apertura {
+		height: calc(100svh + 55vh);
+		margin-bottom: -40vh;
+	}
+
 	.palco {
-		--r: min(34cqw, 20cqh);
+		--r: min(27cqw, 16cqh);
 	}
 
 	.segno {
 		left: calc(50cqw - var(--r));
-		top: calc(42cqh - var(--r));
+		top: calc(36cqh - var(--r));
 	}
 
 	.parole {
@@ -1630,13 +1641,23 @@ body.cursore-attivo .lente * {
 		flex-direction: column;
 	}
 
-	.parole .parola {
-		width: 8.5rem;
-		margin-bottom: auto;
+	.parole .parola,
+	.parole .occhiello {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
 	}
 
 	.parole h1 {
-		font-size: clamp(1.7rem, 7.4vw, 2.3rem);
+		margin-top: auto;
+		font-size: clamp(1.9rem, 8.4vw, 2.5rem);
+	}
+
+	.anello:nth-child(n + 4) {
+		display: none;
 	}
 
 	.scorri {
